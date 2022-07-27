@@ -1,4 +1,4 @@
-#calculate the accuracy of five day weather prediction from openweathermap
+#analyse accuracy of five day weather prediction from openweathermap based on data gathered by weather.py
 
 def analyse(data):
 	pass
