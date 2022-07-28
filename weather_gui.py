@@ -1,16 +1,15 @@
+#script providing functions for creating an image from weather and forecast data
+
 import time,os,math
 from PIL import Image,ImageDraw,ImageFont
 
 picdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/pic' #for fonts
 
-#file = open("towns.txt","r")
-#towns = file.readline().split(",")
-#towns = ['Aachen','Hamburg','Detmold','London','Rome,IT','New York']
 text_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),20)
 small_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),9)
 large_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),42)
 
-#data structure:
+#data structures:
 #current data: [temp,condition,wind_angle,wind_speed]
 #forecast data for each data point: [z_string,z_float,temp,windspeed,clouds,rain,pressure,humidity
 

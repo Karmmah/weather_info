@@ -1,3 +1,4 @@
+#script for getting weather and forecast data and displaying it on a waveshare epaper display using a raspberrypi
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
 
 import sys,os,time
@@ -61,7 +62,9 @@ def main():
 		epd.init(epd.FULL_UPDATE)
 		epd.Clear(0xFF)
 
-		town = "Aachen"
+		with open("town.txt") as f:
+			town = f.read().rstrip("\n")
+			print("Town:",town)
 		while True: #loop that runs to update screen each update interval
 			epd.init(epd.FULL_UPDATE)
 			update_screen(token,town)

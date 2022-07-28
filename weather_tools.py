@@ -1,3 +1,5 @@
+#script providing functions for receiving weather and forecast data from openweathermap
+
 import math,time,requests
 
 def get_forecast(token,town):

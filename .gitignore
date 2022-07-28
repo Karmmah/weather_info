@@ -2,6 +2,7 @@ openweathermap_token.txt
 weather_log.txt
 errors.txt
 error.txt
+town.txt
 
 *.pyc
 *.py.save
