@@ -1,10 +1,11 @@
 #script for getting weather and forecast data and displaying it on a waveshare epaper display using a raspberrypi
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
-
 import sys,os,time
 
 libdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/lib' #for epd library
-ressourcedir = os.getcwd() #"/home/pi/Desktop/weather_info"
+#ressourcedir = os.getcwd()
+ressourcedir = "/home/pi/Desktop/weather_info"
+
 sys.path.append(ressourcedir)
 #picdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/pic' #for fonts
 if os.path.exists(libdir):
@@ -16,7 +17,7 @@ from waveshare_epd import epd2in13_V2
 
 #data structures:
 #current: [temp,condition,wind_angle,wind_speed]
-#forecast (for each entry): [z_string,z_float,t,s,c,r,p,h
+#forecast (for each entry): [z_string,z_float,t,s,c,r,p,h]
 
 def logging(current,forecast): #logging weather and forecast for later analysis of forecast accuracy
 	with open("weather_log.txt","a") as log:
@@ -50,11 +51,12 @@ def update_screen(token,town):
 def main():
 	try:
 		print("Starting weather.py")
-		with open(ressourcedir+"/update_interval.txt") as file:
-			update_interval = int(file.read().rstrip("\n")) #seconds (once every hour)
-		print("Update Interval: "+str(update_interval)+" seconds")
-		with open(ressourcedir+"/openweathermap_token.txt") as file:
-			token = file.read().rstrip("\n")
+
+		with open(ressourcedir+"/update_interval.txt") as f:
+			update_interval = int(f.read().rstrip("\n")) #seconds (once every hour)
+
+		with open(ressourcedir+"/openweathermap_token.txt") as f:
+			token = f.read().rstrip("\n")
 
 		print("Starting and initialising e-paper module")
 		global epd
@@ -62,9 +64,9 @@ def main():
 		epd.init(epd.FULL_UPDATE)
 		epd.Clear(0xFF)
 
-		with open("town.txt") as f:
+		with open(ressourcedir+"/town.txt") as f:
 			town = f.read().rstrip("\n")
-			print("Town:",town)
+
 		while True: #loop that runs to update screen each update interval
 			epd.init(epd.FULL_UPDATE)
 			update_screen(token,town)
@@ -78,6 +80,9 @@ def main():
 		print("\nProgram stopped")
 		epd2in13_V2.epdconfig.module_exit()
 		exit()
+	except Exception as e:
+		with open("errors.txt","a") as f:
+			f.write("error:",e)
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
 
