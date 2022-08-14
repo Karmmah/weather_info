@@ -52,6 +52,23 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 
 	return image
 
+##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
+def draw_today(draw, forecast, min_max, epd_width, epd_height):
+	#draw a few select infos for the current day
+	#selected infos to draw: temp, windspeed, cloud, rain
+	amount = 4 #how many infos to draw
+	width, height, line_height  = 20, 40, height/amount
+	draw.rectangle([(epd_height-width,epd_width),(epd_height,epd_width-height)]) #draw border
+	for i in range(amount):
+		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
+		y0 = epd_width-line_height*i)-y0
+		for j in range(1, len(forecast[2])):
+			y1 = line_height*(forecast[amount+2][j]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
+			y1 = epd_width-line_height*i)-y1
+			x0, x1 = epd_height-width+j*width/len(forecast[2]), x0+width/len(forecast[2])
+			draw.line([x0,y0,x1,y1])
+			y0 = y1
+
 def draw_windgauge(draw,center,radius,wind_speed,angle):
 	w,h = draw.textsize(wind_speed,font=text_font)
 	draw.ellipse((center[0]-radius,center[1]-radius,center[0]+radius,center[1]+radius),width=2)
