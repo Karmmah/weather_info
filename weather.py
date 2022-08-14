@@ -82,7 +82,7 @@ def main():
 		exit()
 	except Exception as e:
 		with open("errors.txt","a") as f:
-			f.write("error:",e)
+			f.write("error:"+str(e))
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
 
