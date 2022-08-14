@@ -61,7 +61,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	draw.rectangle([(epd_height-width,epd_width),(epd_height,epd_width-height)]) #draw border
 	for i in range(amount):
 		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
-		y0 = epd_width-line_height*i)-y0
+		y0 = epd_width-line_height*i-y0
 		for j in range(1, len(forecast[2])):
 			y1 = line_height*(forecast[amount+2][j]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
 			y1 = epd_width-line_height*i)-y1
