@@ -49,6 +49,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
 	start,end = forecast[0][0][0:10],forecast[len(forecast)-1][0]
 	draw_graphical_forecast(epd_width,epd_height,draw,forecast,min_max,start,end)
+	draw_today(draw, forecast, min_max, epd_width, epd_height)
 
 	return image
 
@@ -57,17 +58,23 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	#draw a few select infos for the current day
 	#selected infos to draw: temp, windspeed, cloud, rain
 	amount = 4 #how many infos to draw
-	width, height, line_height  = 20, 40, height/amount
-	draw.rectangle([(epd_height-width,epd_width),(epd_height,epd_width-height)]) #draw border
-	for i in range(amount):
-		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
-		y0 = epd_width-line_height*i-y0
-		for j in range(1, len(forecast[2])):
-			y1 = line_height*(forecast[amount+2][j]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
-			y1 = epd_width-line_height*i)-y1
-			x0, x1 = epd_height-width+j*width/len(forecast[2]), x0+width/len(forecast[2])
-			draw.line([x0,y0,x1,y1])
-			y0 = y1
+	width, height = 49, 68
+	line_height = height/amount
+	draw.rectangle([(epd_height-width,epd_width-1),(epd_height-1,epd_width-height)]) #draw border
+
+	draw.text((epd_height-width, epd_width-height), text="Today")
+#	draw.text((epd_height-xborder_right+2,epd_width-height*5.5-h/2),text='T') #labels
+#	for i in range(amount):
+#		print("TOOOODEYYYY")
+#		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
+#		y0 = epd_width-line_height*i-y0
+#		for j in range(1, len(forecast[2])):
+#			y1 = line_height*(forecast[amount+2][j]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
+#			y1 = epd_width-line_height*i-y1
+#			x0 = epd_height-width+j*width/len(forecast[2])
+#			x1 = x0+width/len(forecast[2])
+#			draw.line([x0,y0,x1,y1])
+#			y0 = y1
 
 def draw_windgauge(draw,center,radius,wind_speed,angle):
 	w,h = draw.textsize(wind_speed,font=text_font)
@@ -81,8 +88,8 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 	xborder_right = 60
 	amount = len(forecast[0])-2 #how many lines to draw; subtract two first entries which are just time and date
 	width,height = (epd_height-xborder_right)/len(forecast),82/amount
-	width *= 0.88 #correction factor for proper layout
-#	width *= 1.05 #correction factor for proper layout
+#	width *= 0.88 #correction factor for proper layout
+	width *= 1.05 #correction factor for proper layout
 #	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*amount)]) #draw border
 
 	for i in range(amount): #draw lines

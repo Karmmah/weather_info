@@ -71,7 +71,7 @@ def main():
 			epd.init(epd.FULL_UPDATE)
 			update_screen(token,town)
 			epd.sleep()
-			print("Power saving mode (Ctrl+c to stop program)")
+			print("Power saving mode (Ctrl+c to stop program)\n")
 			time.sleep(update_interval)
 
 	except IOError as e:
