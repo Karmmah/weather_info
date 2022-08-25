@@ -62,7 +62,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	line_height = height/amount
 	draw.rectangle([(epd_height-width,epd_width-1),(epd_height-1,epd_width-height)]) #draw border
 
-	draw.text((epd_height-width, epd_width-height), text="Today")
+	draw.text((epd_height-width+3, epd_width-height), text="Today")
 #	draw.text((epd_height-xborder_right+2,epd_width-height*5.5-h/2),text='T') #labels
 #	for i in range(amount):
 #		print("TOOOODEYYYY")
@@ -88,8 +88,8 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 	xborder_right = 60
 	amount = len(forecast[0])-2 #how many lines to draw; subtract two first entries which are just time and date
 	width,height = (epd_height-xborder_right)/len(forecast),82/amount
-#	width *= 0.88 #correction factor for proper layout
-	width *= 1.05 #correction factor for proper layout
+	width *= 0.88 #correction factor for proper layout
+#	width *= 1.05 #correction factor for proper layout
 #	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*amount)]) #draw border
 
 	for i in range(amount): #draw lines
