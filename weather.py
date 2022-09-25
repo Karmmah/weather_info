@@ -50,11 +50,9 @@ def update_screen(token,town):
 
 def main():
 	try:
-		print("Starting weather.py")
-
+		print("Starting and configuring weather.py")
 		with open(ressourcedir+"/update_interval.txt") as f:
 			update_interval = int(f.read().rstrip("\n")) #seconds (once every hour)
-
 		with open(ressourcedir+"/openweathermap_token.txt") as f:
 			token = f.read().rstrip("\n")
 
@@ -66,7 +64,9 @@ def main():
 
 		with open(ressourcedir+"/town.txt") as f:
 			town = f.read().rstrip("\n")
+		print("Selected Town: "+town)
 
+		print("Starting program loop")
 		while True: #loop that runs to update screen each update interval
 			epd.init(epd.FULL_UPDATE)
 			update_screen(token,town)
@@ -82,7 +82,7 @@ def main():
 		exit()
 	except Exception as e:
 		with open("errors.txt","a") as f:
-			f.write("error:"+str(e))
+			f.write(str(time.time())+"error:"+str(e))
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
 

@@ -77,7 +77,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 #			y0 = y1
 
 def draw_windgauge(draw,center,radius,wind_speed,angle):
-	w,h = draw.textsize(wind_speed,font=text_font)
+	w, h = draw.textsize(wind_speed,font=text_font)
 	draw.ellipse((center[0]-radius,center[1]-radius,center[0]+radius,center[1]+radius),width=2)
 	draw.line([center,(center[0]+radius*math.cos(angle),center[1]-radius*math.sin(angle))],width=5)
 	draw.line([center,(center[0]+radius*math.cos(angle+math.pi),center[1]-radius*math.sin(angle+math.pi))])
@@ -87,7 +87,7 @@ def draw_windgauge(draw,center,radius,wind_speed,angle):
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, start, end):
 	xborder_right = 60
 	amount = len(forecast[0])-2 #how many lines to draw; subtract two first entries which are just time and date
-	width,height = (epd_height-xborder_right)/len(forecast),82/amount
+	width, height = (epd_height-xborder_right)/len(forecast),82/amount
 	width *= 0.88 #correction factor for proper layout
 #	width *= 1.05 #correction factor for proper layout
 #	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*amount)]) #draw border
