@@ -82,7 +82,7 @@ def main():
 		exit()
 	except Exception as e:
 		with open("errors.txt","a") as f:
-			f.write(str(time.time())+"error:"+str(e))
+			f.write(time.strftime('%Y.%m.%d-%H:%M:%S ')+"error:"+str(e))
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
 
