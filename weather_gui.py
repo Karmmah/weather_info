@@ -56,16 +56,14 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 ##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
 def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	#draw a few select infos for the current day
-	#selected infos to draw: temp, windspeed, cloud, rain
-	amount = 4 #how many infos to draw
+	amount = 4 #how many infos to draw; infos to draw: temp, windspeed, cloud, rain
 	width, height = 49, 68
-	line_height = height/amount
+	line_height = (height-10)/amount
 	draw.rectangle([(epd_height-width,epd_width-1),(epd_height-1,epd_width-height)]) #draw border
 
 	draw.text((epd_height-width+3, epd_width-height), text="Today")
-#	draw.text((epd_height-xborder_right+2,epd_width-height*5.5-h/2),text='T') #labels
-#	for i in range(amount):
-#		print("TOOOODEYYYY")
+	for i in range(amount):
+		draw.line([epd_height-width, epd_width-line_height*(amount-i), epd_height, epd_width-line_height*(amount-i)])
 #		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
 #		y0 = epd_width-line_height*i-y0
 #		for j in range(1, len(forecast[2])):

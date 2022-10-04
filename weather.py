@@ -43,12 +43,23 @@ def update_screen(token,town):
 	print("Received current weather")
 	forecast = weather_tools.get_forecast(token,town)
 	print("Received forecast data")
-	logging(current,forecast)
+	if len(sys.argv) > 1 and (sys.argv[1] == "-test" or sys.argv[1] == "-t"):
+		print("Test Mode, no logging to file")
+	else:
+		logging(current,forecast)
 	image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
 	epd.display(epd.getbuffer(image))
 
 
+def print_help():
+	print("Launch options:")
+	print("  -h or -help to show this help dialog")
+	print("  -t or -test for test mode without logging to file")
+
 def main():
+	if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
+		print_help()
+		return
 	try:
 		print("Starting and configuring weather.py")
 		with open(ressourcedir+"/update_interval.txt") as f:
