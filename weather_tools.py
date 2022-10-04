@@ -22,7 +22,8 @@ def get_forecast(token,town):
 		r = int(url_data['list'][i]['pop']*100) #probability of precipitation
 		p = url_data['list'][i]['main']['pressure']
 		h = url_data['list'][i]['main']['humidity']
-		forecast_data.append([z_string,z_float,t,s,c,r,p,h])
+#		forecast_data.append([z_string,z_float,t,s,c,r,p,h])
+		forecast_data += [[z_string,z_float,t,s,c,r,p,h]]
 
 	return forecast_data
 

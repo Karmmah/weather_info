@@ -49,11 +49,16 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
 	start,end = forecast[0][0][0:10],forecast[len(forecast)-1][0]
 	draw_graphical_forecast(epd_width,epd_height,draw,forecast,min_max,start,end)
-	draw_today(draw, forecast, min_max, epd_width, epd_height)
+
+#	try:
+#		draw_today(draw, forecast, min_max, epd_width, epd_height)
+#	except Exception as e:
+#		print(e)
 
 	return image
 
 ##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
+##min/max for temp,windspeed,clouds,rain,pressure,humidity
 def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	#draw a few select infos for the current day
 	amount = 4 #how many infos to draw; infos to draw: temp, windspeed, cloud, rain
@@ -63,16 +68,18 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 
 	draw.text((epd_height-width+3, epd_width-height), text="Today")
 	for i in range(amount):
-		draw.line([epd_height-width, epd_width-line_height*(amount-i), epd_height, epd_width-line_height*(amount-i)])
-#		y0 = line_height*(forecast[amount+2][0]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
-#		y0 = epd_width-line_height*i-y0
-#		for j in range(1, len(forecast[2])):
-#			y1 = line_height*(forecast[amount+2][j]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
-#			y1 = epd_width-line_height*i-y1
-#			x0 = epd_height-width+j*width/len(forecast[2])
-#			x1 = x0+width/len(forecast[2])
-#			draw.line([x0,y0,x1,y1])
-#			y0 = y1
+		draw.line([ epd_height-width, epd_width-line_height*(amount-i), epd_height, epd_width-line_height*(amount-i) ]) #divider line
+		print(forecast[2], min_max[0])
+
+		for j in range(1, len(forecast[2])):
+			y0 = line_height * (forecast[j-1][i+2]-min_max[i][0]) / (min_max[i][1]-min_max[i][0])
+			y0 = epd_width-line_height*i-y0
+			y1 = line_height*(forecast[j][i+2]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
+			y1 = epd_width-line_height*i-y1
+			x0 = epd_height-width+j*width/len(forecast[2])
+			x1 = x0+width/len(forecast[2])
+			draw.line([x0,y0,x1,y1])
+			y0 = y1
 
 def draw_windgauge(draw,center,radius,wind_speed,angle):
 	w, h = draw.textsize(wind_speed,font=text_font)
