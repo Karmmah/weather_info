@@ -43,8 +43,8 @@ def update_screen(token,town):
 	print("Received current weather")
 	forecast = weather_tools.get_forecast(token,town)
 	print("Received forecast data")
-	if len(sys.argv) > 1 and (sys.argv[1] == "-test" or sys.argv[1] == "-t"):
-		print("Test Mode, no logging to file")
+	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+		print("test, no logging to file")
 	else:
 		logging(current,forecast)
 	image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
@@ -57,9 +57,9 @@ def print_help():
 	print("  -t or -test for test mode without logging to file")
 
 def main():
-	if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
-		print_help()
-		return
+	if len(sys.argv)>1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+		print("Test Mode")
+
 	try:
 		print("Starting and configuring weather.py")
 		with open(ressourcedir+"/update_interval.txt") as f:
@@ -98,4 +98,7 @@ def main():
 		epd2in13_V2.epdconfig.module_exit()
 
 if __name__ == "__main__":
-	main()
+	if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
+		print_help()
+	else:
+		main()
