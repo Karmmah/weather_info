@@ -1,19 +1,22 @@
 #script for getting weather and forecast data and displaying it on a waveshare epaper display using a raspberrypi
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
-import sys,os,time
 
-libdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/lib' #for epd library
+import sys, os, time
+
+#libdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/lib' #for epd library
 #ressourcedir = os.getcwd()
-ressourcedir = "/home/pi/Desktop/weather_info"
+ressourcedir = "/home/pi/weather_info"
 
 sys.path.append(ressourcedir)
-#picdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/pic' #for fonts
-if os.path.exists(libdir):
-	sys.path.append(libdir)
-else:
-	print('libdir path not found')
 
-from waveshare_epd import epd2in13_V2
+#picdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/pic' #for fonts
+#if os.path.exists(libdir):
+#	sys.path.append(libdir)
+#else:
+#	print('libdir path not found')
+
+#from waveshare_epd import epd2in13_V2
+import epd2in13_V2
 
 #data structures:
 #current: [temp,condition,wind_angle,wind_speed]
@@ -68,6 +71,7 @@ def main():
 			token = f.read().rstrip("\n")
 
 		print("Starting and initialising e-paper module")
+
 		global epd
 		epd = epd2in13_V2.EPD()
 		epd.init(epd.FULL_UPDATE)
