@@ -3,8 +3,7 @@
 import time,os,math
 from PIL import Image,ImageDraw,ImageFont
 
-#picdir = '/home/pi/bcm2835-1.60/e-Paper/RaspberryPi_JetsonNano/python/pic' #for fonts
-picdir = '/home/pi/weather_info' #for fonts
+picdir = '/home/pi/weather_info' #where fonts are located
 
 text_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),20)
 small_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),9)
@@ -61,7 +60,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 ##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
 ##min/max for temp,windspeed,clouds,rain,pressure,humidity
 def draw_today(draw, forecast, min_max, epd_width, epd_height):
-	#draw a few select infos for the current day
+	#draw a few select infos for the current day in extra graphic
 	amount = 4 #how many infos to draw; infos to draw: temp, windspeed, cloud, rain
 	width, height = 49, 68
 	line_height = (height-10)/amount
@@ -70,7 +69,6 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	draw.text((epd_height-width+3, epd_width-height), text="Today")
 	for i in range(amount):
 		draw.line([ epd_height-width, epd_width-line_height*(amount-i), epd_height, epd_width-line_height*(amount-i) ]) #divider line
-		#print(forecast[2], min_max[0])
 
 		draw.text( (epd_height-10,epd_width-line_height*(amount+i)) ,text="field"+str(i),font=text_font,fill=1,align='center')
 		for j in range(1, len(forecast[2])):
@@ -94,7 +92,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 	amount = len(forecast[0])-2 #how many lines to draw; subtract two first entries which are just time and date
 	width, height = (epd_height-xborder_right)/len(forecast),82/amount
 	width *= 0.88 #correction factor for proper layout
-#	width *= 1.05 #correction factor for proper layout
+#	width *= 1.05 #correction factor for proper layout (used with python2)
 #	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*amount)]) #draw border
 
 	for i in range(amount): #draw lines

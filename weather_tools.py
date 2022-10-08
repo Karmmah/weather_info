@@ -7,7 +7,7 @@ def get_forecast(token,town):
 		print("Token is not valid")
 		return []
 
-	data_points = 40 #max = 5 days * 8 update times = 40
+	data_points = 40 #max = 5days * 8data points per day = 40
 	url = "https://api.openweathermap.org/data/2.5/forecast?q=%s&%i&appid=%s"%(town,data_points,token)
 	url_data = requests.get(url).json()
 	gather_flag = True if time.localtime().tm_hour == 0 else False #gather/save forecast once per day to file at midnight
@@ -22,7 +22,6 @@ def get_forecast(token,town):
 		r = int(url_data['list'][i]['pop']*100) #probability of precipitation
 		p = url_data['list'][i]['main']['pressure']
 		h = url_data['list'][i]['main']['humidity']
-#		forecast_data.append([z_string,z_float,t,s,c,r,p,h])
 		forecast_data += [[z_string,z_float,t,s,c,r,p,h]]
 
 	return forecast_data
@@ -49,7 +48,7 @@ def m_s_to_beaufort(speed):
 	return 12
 
 def is_token_valid(token):
-	if len(token) < 32:
+	if len(token) < 32 and len(token) > 20: #check length of token, 20 is arbitrary (could be higher or lower)
 		return False
 	else:
 		return True
