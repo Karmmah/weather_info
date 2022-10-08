@@ -62,7 +62,6 @@ def main():
 			token = f.read().rstrip("\n")
 
 		print("Starting and initialising e-paper module")
-
 		global epd
 		epd = epd2in13_V2.EPD()
 		epd.init(epd.FULL_UPDATE)
@@ -78,7 +77,7 @@ def main():
 			update_screen(token,town)
 			epd.sleep()
 			print("Power saving mode (Ctrl+c to stop program)\n")
-			time.sleep(update_interval)
+			time.sleep(update_interval-7) #7 seconds to compensate length of the update process
 
 	except IOError as e:
 		print(e)
