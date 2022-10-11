@@ -77,7 +77,7 @@ def main():
 			update_screen(token,town)
 			epd.sleep()
 			print("Power saving mode (Ctrl+c to stop program)\n")
-			time.sleep(update_interval-7) #7 seconds to compensate length of the update process
+			time.sleep(update_interval-6) #seconds offset to compensate length of the update process
 
 	except IOError as e:
 		print(e)

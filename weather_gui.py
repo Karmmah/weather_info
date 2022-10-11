@@ -20,7 +20,6 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	#general info (town and time)
 	w,h = draw.textsize(town)
 	draw.text((epd_height*0.3, -h*0.3), text=town)
-#	draw.text((epd_height-w,epd_width-10-h),text=town)
 	_time_ = time.strftime('%H:%M:%S')
 	w,h = draw.textsize(_time_)
 	draw.text((epd_height*0.3, h*0.55), text=_time_)
@@ -54,7 +53,6 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 		draw_today(draw, forecast, min_max, epd_width, epd_height)
 	except Exception as e:
 		print(e)
-#	print(image)
 	return image
 
 ##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
@@ -70,7 +68,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	for i in range(amount):
 		draw.line([ epd_height-width, epd_width-line_height*(amount-i), epd_height, epd_width-line_height*(amount-i) ]) #divider line
 
-		draw.text( (epd_height-10,epd_width-line_height*(amount+i)) ,text="field"+str(i),font=text_font,fill=1,align='center')
+		draw.text( (epd_height-30,epd_width-line_height*(amount+i)) ,text="field"+str(i), font=text_font, fill=0, align='center')
 		for j in range(1, len(forecast[2])):
 			y0 = epd_width-line_height*i - line_height * (forecast[j-1][i+2]-min_max[i][0]) / (min_max[i][1]-min_max[i][0])
 			y1 = epd_width-line_height*i - line_height * (forecast[j][i+2]-min_max[i][0])/(min_max[i][1]-min_max[i][0])
