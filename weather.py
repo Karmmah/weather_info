@@ -15,15 +15,19 @@ import epd2in13_V2
 
 def logging(current,forecast): #logging weather and forecast for later analysis of forecast accuracy
 	with open("weather_log.txt","a") as log:
+
 		if time.localtime().tm_hour in [0,6,12,18]: #four times a day save the current weather
 			t = time.strftime('%Y.%m.%d-%H:%M:%S ')
-			log.write("Current: "+t+str(int(time.time()))+" ")
+			log.write("Current: " + t + str(int(time.time())) + " ")
+
 			for item in current:
 				print(item)
-				log.write(str(item)+" ")
+				log.write(str(item) + " ")
 			log.write("\n")
+
 		if time.localtime().tm_hour == 0: #each day save the forecast once
 			log.write("Forecast: ")
+
 			for item in forecast:
 				log.write(item[1]+"-"+str(item[2])+"-"+str(item[3])+"-"+str(item[4])+"-"+str(item[5])+"-"+str(item[6])+"-"+str(item[7]))
 				log.write(" ")
@@ -37,10 +41,12 @@ def update_screen(token,town):
 	print("Received current weather")
 	forecast = weather_tools.get_forecast(token,town)
 	print("Received forecast data")
+
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		print("test, no logging to file")
 	else:
 		logging(current,forecast)
+
 	image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
 	epd.display(epd.getbuffer(image))
 
@@ -58,6 +64,7 @@ def main():
 		print("Starting and configuring weather.py")
 		with open(ressourcedir+"/update_interval.txt") as f:
 			update_interval = int(f.read().rstrip("\n")) #seconds (once every hour)
+
 		with open(ressourcedir+"/openweathermap_token.txt") as f:
 			token = f.read().rstrip("\n")
 
