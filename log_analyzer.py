@@ -1,6 +1,9 @@
 import time
 
 def calc_deltas(current_data, forecast_data):
+	print("currnet_data[0]:", current_data[0])
+	print("forecast_data[0]:", forecast_data[0])
+
 	for c in current_data:
 		current_time = c["time"]
 		print(current_time)
@@ -9,39 +12,15 @@ def calc_deltas(current_data, forecast_data):
 
 			for e in f:
 				delta_time = int(e[0])-current_time
-				if abs(delta_time) < 3600*3:
+				if abs(delta_time) < 3600*2:
 					print(delta_time)
-
-#	for index, item in enumerate(forecast):
-#		forecast_time = int(item[0])
-#		try:
-#			forecast_temp = int(item[1])
-#		except:
-#			continue
-#
-#		if int((forecast_time-current_time)/3600) == 24:
-#			actual_temp = -273
-#
-#			for c in current_data:
-#				time_delta = abs(c["time"]-forecast_time)
-#				if time_delta < 3600*3:
-#					print("c time",c["time"], ", forecast time", forecast_time)
-#					print("delta time:",delta_time)
-#					actual_temp = c["temp"]
-#					break
-#
-#					if actual_temp == -273:
-#						continue
-#
-#					print("delta temp:", forecast_temp-actual_temp)
-#					analysis_data["+1d_temp-delta_sum"] += forecast_temp-actual_temp
-#					analysis_data["+1d_temp-delta_amount"] += 1
 
 def main():
 	# define or ask for the file name
 	print("Input file name: ", end="")
 #	file_name = input()
 	file_name = "weather_log_230112.txt" #testing, debug
+
 	print(file_name) #debug
 
 	# check if the file exists

@@ -47,6 +47,14 @@ class RaspberryPi:
         import RPi.GPIO
 
         self.GPIO = RPi.GPIO
+
+        self.GPIO.setmode(self.GPIO.BCM)
+        self.GPIO.setwarnings(False)
+        self.GPIO.setup(self.RST_PIN, self.GPIO.OUT)
+        self.GPIO.setup(self.DC_PIN, self.GPIO.OUT)
+        self.GPIO.setup(self.CS_PIN, self.GPIO.OUT)
+        self.GPIO.setup(self.BUSY_PIN, self.GPIO.IN)
+
         self.SPI = spidev.SpiDev()
 
     def digital_write(self, pin, value):
