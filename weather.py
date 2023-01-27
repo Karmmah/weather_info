@@ -36,9 +36,12 @@ def logging(current,forecast): #logging weather and forecast for later analysis 
 import weather_tools,weather_gui
 def update_screen(token,town):
 	global epd
+
 	print("Town: "+town)
+
 	current = weather_tools.get_current_weather(token,town)
 	print("Received current weather")
+
 	forecast = weather_tools.get_forecast(token,town)
 	print("Received forecast data")
 
@@ -88,13 +91,16 @@ def main():
 
 	except IOError as e:
 		print(e)
+
 	except KeyboardInterrupt:
 		print("\nProgram stopped")
 		epd2in13_V2.epdconfig.module_exit()
 		exit()
+
 	except Exception as e:
 		with open("errors.txt","a") as f:
 			f.write(time.strftime('%Y.%m.%d-%H:%M:%S ')+"error:"+str(e))
+
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
 
