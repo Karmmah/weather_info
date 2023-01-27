@@ -47,6 +47,7 @@ def update_screen(token,town):
 
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		print("test, no logging to file")
+
 	else:
 		logging(current,forecast)
 
@@ -60,7 +61,7 @@ def print_help():
 	print("  -t or -test for test mode without logging to file")
 
 def main():
-	if len(sys.argv)>1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		print("Test Mode")
 
 	try:
@@ -107,6 +108,7 @@ def main():
 if __name__ == "__main__":
 	if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
 		print_help()
+
 	else:
 		main()
 
