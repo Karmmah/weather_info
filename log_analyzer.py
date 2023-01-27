@@ -4,6 +4,8 @@ def calc_deltas(current_data, forecast_data):
 	print("len(current_data):\n", len(current_data), "current_data[0]:", current_data[0])
 	print("len(forecast_data):\n", len(forecast_data), "forecast_data[0]:", forecast_data[0])
 
+	total_temp_delta = {"1d_sum":0, "1d_amount":0, "2d_sum":0, "2d_amount":0, "3d_sum":0, "3d_amount":0, "4d_sum":0, "4d_amount":0, "5d_sum":0, "5d_amount":0}
+
 	for current in current_data:
 		temp_delta = {"1d_sum":0, "1d_amount":0, "2d_sum":0, "2d_amount":0, "3d_sum":0, "3d_amount":0, "4d_sum":0, "4d_amount":0, "5d_sum":0, "5d_amount":0}
 
@@ -35,17 +37,28 @@ def calc_deltas(current_data, forecast_data):
 						temp_delta["5d_sum"] += entry["temp"]-current["temp"]
 						temp_delta["5d_amount"] += 1
 
-		print("temp delta avg:")
-		if temp_delta["1d_amount"] > 0:
-			print("  1d", temp_delta["1d_sum"]/temp_delta["1d_amount"])
-		if temp_delta["2d_amount"] > 0:
-			print("  2d", temp_delta["2d_sum"]/temp_delta["2d_amount"])
-		if temp_delta["3d_amount"] > 0:
-			print("  3d", temp_delta["3d_sum"]/temp_delta["3d_amount"])
-		if temp_delta["4d_amount"] > 0:
-			print("  4d", temp_delta["4d_sum"]/temp_delta["4d_amount"])
-		if temp_delta["5d_amount"] > 0:
-			print("  5d", temp_delta["5d_sum"]/temp_delta["5d_amount"])
+		total_temp_delta["1d_sum"] += temp_delta["1d_sum"]
+		total_temp_delta["1d_amount"] += temp_delta["1d_amount"]
+		total_temp_delta["2d_sum"] += temp_delta["2d_sum"]
+		total_temp_delta["2d_amount"] += temp_delta["2d_amount"]
+		total_temp_delta["3d_sum"] += temp_delta["3d_sum"]
+		total_temp_delta["3d_amount"] += temp_delta["3d_amount"]
+		total_temp_delta["4d_sum"] += temp_delta["4d_sum"]
+		total_temp_delta["4d_amount"] += temp_delta["4d_amount"]
+		total_temp_delta["5d_sum"] += temp_delta["5d_sum"]
+		total_temp_delta["5d_amount"] += temp_delta["5d_amount"]
+
+	print("temp delta avg:")
+	if temp_delta["1d_amount"] > 0:
+		print("  1d", total_temp_delta["1d_sum"]/total_temp_delta["1d_amount"])
+	if temp_delta["2d_amount"] > 0:
+		print("  2d", total_temp_delta["2d_sum"]/total_temp_delta["2d_amount"])
+	if temp_delta["3d_amount"] > 0:
+		print("  3d", total_temp_delta["3d_sum"]/total_temp_delta["3d_amount"])
+	if temp_delta["4d_amount"] > 0:
+		print("  4d", total_temp_delta["4d_sum"]/total_temp_delta["4d_amount"])
+	if temp_delta["5d_amount"] > 0:
+		print("  5d", total_temp_delta["5d_sum"]/total_temp_delta["5d_amount"])
 
 def main():
 	# define or ask for the file name
