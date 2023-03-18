@@ -1,3 +1,4 @@
+#!/bin/python3
 #script for getting weather and forecast data and displaying it on a waveshare epaper display using a raspberrypi
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
 
@@ -34,6 +35,7 @@ def logging(current,forecast): #logging weather and forecast for later analysis 
 			log.write("\n")
 
 import weather_tools,weather_gui
+
 def update_screen(token,town):
 	global epd
 
@@ -66,8 +68,7 @@ def main():
 
 	try:
 		print("Starting and configuring weather.py")
-		with open(ressourcedir+"/update_interval.txt") as f:
-			update_interval = int(f.read().rstrip("\n")) #seconds (once every hour)
+		update_interval = 3600 #seconds (once every hour)
 
 		with open(ressourcedir+"/openweathermap_token.txt") as f:
 			token = f.read().rstrip("\n")
@@ -83,12 +84,16 @@ def main():
 		print("Selected Town: "+town)
 
 		print("Starting program loop")
+		last_update_time = 0
 		while True: #loop that runs to update screen each update interval
 			epd.init(epd.FULL_UPDATE)
 			update_screen(token,town)
 			epd.sleep()
+			last_update_time = time.time()
 			print("Power saving mode (Ctrl+c to stop program)\n")
-			time.sleep(update_interval-6) #seconds offset to compensate length of the update process
+
+			while time.time() < last_update_time + update_interval:
+				time.sleep(600) #seconds offset to compensate length of the update process
 
 	except IOError as e:
 		print(e)

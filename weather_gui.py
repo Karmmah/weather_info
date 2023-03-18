@@ -31,7 +31,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 #	draw.text((47,-4),text='*C',font=text_font)
 	draw.text( (47,0), text='*C')
 	condition = current[1]
-	draw.text( (69,-7), text=condition, font=text_font )
+	draw.text( (65,-7), text=condition, font=text_font )
 
 	# wind gauge
 	radius = 25 #pixels
@@ -40,12 +40,10 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
 	min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]] #min/max for temp,windspeed,clouds,rain,pressure,humidity
-
 	for i in range(2,len(forecast[0])):
 		for j in range(len(forecast)):
 			if forecast[j][i] < min_max[i-2][0]:
 				min_max[i-2][0] = forecast[j][i]
-
 			if forecast[j][i] > min_max[i-2][1]:
 				min_max[i-2][1] = forecast[j][i]
 
@@ -55,7 +53,6 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 
 	try:
 		draw_today(draw, forecast, min_max, epd_width, epd_height)
-
 	except Exception as e:
 		print(e)
 
@@ -70,7 +67,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 	line_height = (height-10)/amount
 	draw.rectangle([(epd_height-width,epd_width-1),(epd_height-1,epd_width-height)]) #draw border
 
-	draw.text((epd_height-width+3, epd_width-height), text="Today")
+	draw.text((epd_height-width+3, epd_width-height), text=" Today")
 	labels = ["T", "W", "C", "R"]
 
 	for i in range(amount):
