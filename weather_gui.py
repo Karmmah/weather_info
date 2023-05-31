@@ -114,6 +114,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 		y_left = y0-height*value
 
 		# draw entries
+		polygon_points = [epd_height-xborder_right,y0,0,y0]
 		for j in range(0,len(forecast)):
 			# draw vertical separators on first line
 			if i == 0:
@@ -127,11 +128,12 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 					pass #draw.line([(j*width,epd_width),(j*width,epd_width-height*amount)], width=1)
 
 			value = (float(forecast[j][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001)
-			y_right = y0-height*value
+			x = j*width
+			y = y0-height*value
+			polygon_points += [x,y]
 
-			# draw graph
-			draw.line([((j-1)*width,y_left), (j*width,y_right)], width=1)
-			y_left = y_right
+		# draw graph
+		draw.polygon(polygon_points, fill=0)
 
 		# min and max values of each line
 		draw.text((epd_height-xborder_right-20,y0-height*1.1),text=str(min_max[i][1]), font=small_font)
