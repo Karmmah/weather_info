@@ -18,28 +18,29 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	draw = ImageDraw.Draw(image)
 
 	# general info (town and time)
-#	w,h = draw.textsize(town)
-	draw.text((50, 11), text=town)
+	w,h = draw.textsize(town)
+	draw.text((epd_height-w, 56), text=town)
 	_time_ = time.strftime('%H:%M:%S')
 	w,h = draw.textsize(_time_)
-	draw.text((50, 19), text=_time_)
+	draw.text((175, -5), text=_time_, font=text_font)
 
 	# big general weather info
 	temp = current[0]
 	w,h = draw.textsize(temp,font=large_font)
-	draw.text( (46-w,-10), text=temp, font=large_font, outline=0 )
+	draw.text( (238-w,7), text=temp, font=large_font, outline=0 )
 #	draw.text((47,-4),text='*C',font=text_font)
-	draw.text( (47,0), text='*C')
+	draw.text( (238,17), text='*C')
 	condition = current[1]
-	draw.text( (65,-7), text=condition, font=text_font )
+	draw.text( (175,47), text=condition, font=small_font )
 
 	# wind gauge
 	radius = 25 #pixels
-	center = (epd_height-radius-1,radius)
+	center = (epd_height-radius-1, epd_width-radius-1)
 	angle,wind_speed = current[2],current[3]
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
-	min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]] #min/max for temp,windspeed,clouds,rain,pressure,humidity
+	# get min and max values for each displayed value
+	min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]] #initial min/max for temp,windspeed,clouds,rain,pressure,humidity
 	for i in range(2,len(forecast[0])):
 		for j in range(len(forecast)):
 			if forecast[j][i] < min_max[i-2][0]:
@@ -48,13 +49,13 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 				min_max[i-2][1] = forecast[j][i]
 
 	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
-	start,end = forecast[0][0][0:10],forecast[len(forecast)-1][0]
-	draw_graphical_forecast(epd_width,epd_height,draw,forecast,min_max,start,end)
+	start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10]
+	draw_graphical_forecast(epd_width,epd_height,draw,forecast,min_max,start_label,end_label)
 
-	try:
-		draw_today(draw, forecast, min_max, epd_width, epd_height)
-	except Exception as e:
-		print(e)
+#	try:
+#		draw_today(draw, forecast, min_max, epd_width, epd_height)
+#	except Exception as e:
+#		print(e)
 
 	return image
 
@@ -91,12 +92,12 @@ def draw_windgauge(draw,center,radius,wind_speed,angle):
 	draw.ellipse((center[0]-radius/2,center[1]-radius/2,center[0]+radius/2,center[1]+radius/2),fill=0)
 	draw.text((center[0]-w/2,center[1]-h*7/11),text=wind_speed,font=text_font,fill=1,align='center')
 
-def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, start, end):
-	xborder_right = 60
+def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, start_label, end_label):
+	xborder_right = 108
 
 	# how many lines to draw; subtract two first entries which are just time and date
 	amount = len(forecast[0])-2
-	width, height = (epd_height-xborder_right)/len(forecast), 82/amount
+	width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/amount
 	width *= 0.88 #correction factor for proper layout
 
 	# draw border
@@ -135,19 +136,19 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 		# draw graph
 		draw.polygon(polygon_points, fill=0)
 
-		# min and max values of each line
-		draw.text((epd_height-xborder_right-20,y0-height*1.1),text=str(min_max[i][1]), font=small_font)
-		draw.text((epd_height-xborder_right-20,y0-height*0.7),text=str(min_max[i][0]), font=small_font)
+		# draw labales for min and max values of each line
+		draw.text((epd_height-xborder_right+3,y0-height*0.5),text=str(min_max[i][0]), font=small_font)
+		draw.text((epd_height-xborder_right+3,y0-height*1.0),text=str(min_max[i][1]), font=small_font)
 
 	# labels
 	w,h = draw.textsize('W')
-	draw.text((epd_height-xborder_right+3,epd_width-height*5.5-h/2),text='T', font=small_font)
-	draw.text((epd_height-xborder_right+3,epd_width-height*4.5-h/2),text='W', font=small_font)
-	draw.text((epd_height-xborder_right+3,epd_width-height*3.5-h/2),text='C', font=small_font)
-	draw.text((epd_height-xborder_right+3,epd_width-height*2.5-h/2),text='R', font=small_font)
-	draw.text((epd_height-xborder_right+3,epd_width-height*1.5-h/2),text='P', font=small_font)
-	draw.text((epd_height-xborder_right+3,epd_width-height*0.5-h/2),text='H', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*5.5-h/2),text='T', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*4.5-h/2),text='W', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*3.5-h/2),text='C', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*2.5-h/2),text='R', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*1.5-h/2),text='P', font=small_font)
+	draw.text((epd_height-xborder_right+24,epd_width-height*0.5-h/2),text='H', font=small_font)
 
-	w = draw.textsize(end)[0]
-	draw.text((0, epd_width-height*amount-h), text=start)
-	draw.text((epd_height-xborder_right-w, epd_width-height*amount-h), text=end)
+	w = draw.textsize(end_label)[0]
+	draw.text((0, epd_width-height*amount-h), text=start_label)
+	draw.text((epd_height-xborder_right-w, epd_width-height*amount-h), text=end_label)

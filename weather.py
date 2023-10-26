@@ -53,6 +53,7 @@ def update_screen(token,town):
 	else:
 		logging(current,forecast)
 
+	print("epd.width:", epd.width, "epd.height:", epd.height)
 	image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
 	epd.display(epd.getbuffer(image))
 
