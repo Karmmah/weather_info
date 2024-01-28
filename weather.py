@@ -14,6 +14,7 @@ import epd2in13_V2
 #current: [temp,condition,wind_angle,wind_speed]
 #forecast (for each entry): [z_string,z_float,t,s,c,r,p,h]
 
+
 def logging(current,forecast): #logging weather and forecast for later analysis of forecast accuracy
 	with open("weather_log.txt","a") as log:
 
@@ -36,15 +37,17 @@ def logging(current,forecast): #logging weather and forecast for later analysis 
 
 import weather_tools,weather_gui
 
+
 def update_screen(token,town):
 	global epd
-
-	print("Town: "+town)
 
 	current = weather_tools.get_current_weather(token,town)
 	print("Received current weather")
 
 	forecast = weather_tools.get_forecast(token,town)
+	if forecast == None:
+		print("Failed to get forecast")
+		return
 	print("Received forecast data")
 
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
@@ -62,6 +65,7 @@ def print_help():
 	print("Launch options:")
 	print("  -h or -help to show this help dialog")
 	print("  -t or -test for test mode without logging to file")
+
 
 def main():
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
@@ -94,7 +98,7 @@ def main():
 			print("Power saving mode (Ctrl+c to stop program)\n")
 
 			while time.time() < last_update_time + update_interval:
-				time.sleep(600) #seconds offset to compensate length of the update process
+				time.sleep(10) #seconds offset to compensate length of the update process
 
 	except IOError as e:
 		print(e)

@@ -13,6 +13,7 @@ large_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),42)
 #current data: [temp,condition,wind_angle,wind_speed]
 #forecast data for each data point: [z_string,z_float,temp,windspeed,clouds,rain,pressure,humidity
 
+
 def get_image(epd_width, epd_height, town, current, forecast): #return an image created from data
 	image = Image.new('1',(epd_height,epd_width),255)
 	draw = ImageDraw.Draw(image)
@@ -59,6 +60,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 
 	return image
 
+
 ##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
 ##min/max for temp,windspeed,clouds,rain,pressure,humidity
 def draw_today(draw, forecast, min_max, epd_width, epd_height):
@@ -84,6 +86,7 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 			draw.line([x0,y0,x1,y1])
 			y0 = y1
 
+
 def draw_windgauge(draw,center,radius,wind_speed,angle):
 	w, h = draw.textsize(wind_speed,font=text_font)
 	draw.ellipse((center[0]-radius,center[1]-radius,center[0]+radius,center[1]+radius),width=2)
@@ -91,6 +94,7 @@ def draw_windgauge(draw,center,radius,wind_speed,angle):
 	draw.line([center,(center[0]+radius*math.cos(angle+math.pi),center[1]-radius*math.sin(angle+math.pi))])
 	draw.ellipse((center[0]-radius/2,center[1]-radius/2,center[0]+radius/2,center[1]+radius/2),fill=0)
 	draw.text((center[0]-w/2,center[1]-h*7/11),text=wind_speed,font=text_font,fill=1,align='center')
+
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, start_label, end_label):
 	xborder_right = 108

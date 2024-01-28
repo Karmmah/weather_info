@@ -2,6 +2,7 @@
 
 import math,time,requests
 
+
 def get_forecast(token,town):
 	if not is_token_valid(token):
 		print("Token is not valid")
@@ -9,7 +10,11 @@ def get_forecast(token,town):
 
 	data_points = 40 #max = 5days * 8data points per day = 40
 	url = "https://api.openweathermap.org/data/2.5/forecast?q=%s&%i&appid=%s"%(town,data_points,token)
-	url_data = requests.get(url).json()
+	try:
+		url_data = requests.get(url).json()
+	except Exception as err:
+		print(f"Error getting weather data: {err}")
+		return None
 	gather_flag = True if time.localtime().tm_hour == 0 else False #gather/save forecast once per day to file at midnight
 	forecast_data = []
 
@@ -26,19 +31,25 @@ def get_forecast(token,town):
 
 	return forecast_data
 
+
 def get_current_weather(token,town):
 	if not is_token_valid(token):
 		print("Token is not valid")
 		return []
 
 	url = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"%(town,token)
-	data = requests.get(url).json()
+	try:
+		data = requests.get(url).json()
+	except Exception as err:
+		print(f"Could not get weather data: {err}")
+		return None
 	temp = str(int(round(data['main']['temp']-273.15,0)))
 	condition = str(data['weather'][0]['description'])
 	wind_angle = round((float(data['wind']['deg'])/180.0)*math.pi-math.pi,2)
 	wind_speed = str(m_s_to_beaufort(data['wind']['speed']))
 
 	return [temp,condition,wind_angle,wind_speed]
+
 
 def m_s_to_beaufort(speed):
 	beaufort_scale = [0.5,1.5,3.3,5.5,7.9,10.7,13.8,17.1,20.7,24.4,28.4,32.6]
@@ -47,13 +58,15 @@ def m_s_to_beaufort(speed):
 			return i
 	return 12
 
+
 def is_token_valid(token):
 	if len(token) < 32 and len(token) > 20: #check length of token, 20 is arbitrary (could be higher or lower)
 		return False
 	else:
 		return True
 
-def main():
+
+def test():
 	town = "Aachen"
 	with open("openweathermap_token.txt") as file:
 		token = file.read().rstrip("\n")
@@ -67,5 +80,6 @@ def main():
 	print("Forecast for "+town+": (time1,time2,temp,wind speed,clouds,rain,pressure,humidity)")
 	print(forecast)
 
+
 if __name__ == "__main__":
-	main()
+	test()
