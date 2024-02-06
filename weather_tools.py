@@ -10,11 +10,8 @@ def get_forecast(token,town):
 
 	data_points = 40 #max = 5days * 8data points per day = 40
 	url = "https://api.openweathermap.org/data/2.5/forecast?q=%s&%i&appid=%s"%(town,data_points,token)
-	try:
-		url_data = requests.get(url).json()
-	except Exception as err:
-		print(f"Error getting weather data: {err}")
-		return None
+	url_data = requests.get(url).json()
+	
 	gather_flag = True if time.localtime().tm_hour == 0 else False #gather/save forecast once per day to file at midnight
 	forecast_data = []
 
@@ -38,11 +35,8 @@ def get_current_weather(token,town):
 		return []
 
 	url = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"%(town,token)
-	try:
-		data = requests.get(url).json()
-	except Exception as err:
-		print(f"Could not get weather data: {err}")
-		return None
+	data = requests.get(url).json()
+	
 	temp = str(int(round(data['main']['temp']-273.15,0)))
 	condition = str(data['weather'][0]['description'])
 	wind_angle = round((float(data['wind']['deg'])/180.0)*math.pi-math.pi,2)

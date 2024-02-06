@@ -41,13 +41,18 @@ import weather_tools,weather_gui
 def update_screen(token,town):
 	global epd
 
-	current = weather_tools.get_current_weather(token,town)
+	try:
+		current = weather_tools.get_current_weather(token,town)
+	except Exception as err:
+		print(f"ERROR: {err}")
+		return None
 	print("Received current weather")
 
-	forecast = weather_tools.get_forecast(token,town)
-	if forecast == None:
-		print("Failed to get forecast")
-		return
+	try:
+		forecast = weather_tools.get_forecast(token,town)
+	except Exception as err:
+		print(f"ERROR: {err}")
+		return None
 	print("Received forecast data")
 
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
@@ -98,7 +103,7 @@ def main():
 			print("Power saving mode (Ctrl+c to stop program)\n")
 
 			while time.time() < last_update_time + update_interval:
-				time.sleep(10) #seconds offset to compensate length of the update process
+				time.sleep(60) #seconds offset to compensate length of the update process
 
 	except IOError as e:
 		print(e)
