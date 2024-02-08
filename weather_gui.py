@@ -22,7 +22,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	w,h = draw.textsize(town)
 	draw.text((epd_height-w, 56), text=town)
 	_time_ = time.strftime('%H:%M:%S')
-	w,h = draw.textsize(_time_)
+	w,h = draw.textsize(_time_, font=text_font)
 	draw.text((175, -5), text=_time_, font=text_font)
 
 	# big general weather info
@@ -32,7 +32,7 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 #	draw.text((47,-4),text='*C',font=text_font)
 	draw.text( (238,17), text='*C')
 	condition = current[1]
-	draw.text( (175,47), text=condition, font=small_font )
+	draw.text( (183,47), text=condition, font=small_font )
 
 	# wind gauge
 	radius = 25 #pixels
@@ -61,9 +61,10 @@ def get_image(epd_width, epd_height, town, current, forecast): #return an image 
 	return image
 
 
-##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
-##min/max for temp,windspeed,clouds,rain,pressure,humidity
 def draw_today(draw, forecast, min_max, epd_width, epd_height):
+	##forecast data for each data point: [0:z_string,1:z_float,2:temp,3:windspeed,4:clouds,5:rain,6.pressure,7:humidity]
+	##min/max for temp,windspeed,clouds,rain,pressure,humidity
+
 	#draw a few select infos for the current day in extra graphic
 	amount = 4 #how many infos to draw; infos to draw: temp, windspeed, cloud, rain
 	width, height = 49, 68
@@ -140,19 +141,22 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, star
 		# draw graph
 		draw.polygon(polygon_points, fill=0)
 
-		# draw labales for min and max values of each line
-		draw.text((epd_height-xborder_right+3,y0-height*0.5),text=str(min_max[i][0]), font=small_font)
-		draw.text((epd_height-xborder_right+3,y0-height*1.0),text=str(min_max[i][1]), font=small_font)
+		# draw lables for min and max values of each line
+		draw.text((epd_height-xborder_right+20,y0-height*0.5),text=str(min_max[i][0]), font=small_font)
+		draw.text((epd_height-xborder_right+20,y0-height*1.0),text=str(min_max[i][1]), font=small_font)
 
 	# labels
-	w,h = draw.textsize('W')
-	draw.text((epd_height-xborder_right+24,epd_width-height*5.5-h/2),text='T', font=small_font)
-	draw.text((epd_height-xborder_right+24,epd_width-height*4.5-h/2),text='W', font=small_font)
-	draw.text((epd_height-xborder_right+24,epd_width-height*3.5-h/2),text='C', font=small_font)
-	draw.text((epd_height-xborder_right+24,epd_width-height*2.5-h/2),text='R', font=small_font)
-	draw.text((epd_height-xborder_right+24,epd_width-height*1.5-h/2),text='P', font=small_font)
-	draw.text((epd_height-xborder_right+24,epd_width-height*0.5-h/2),text='H', font=small_font)
+	label_font = text_font
+	w,h = draw.textsize('W', font=label_font)
 
-	w = draw.textsize(end_label)[0]
+	draw.text((epd_height-xborder_right+2,epd_width-height*5.5-h/2 - 1),text='T', font=label_font)
+	draw.text((epd_height-xborder_right+2,epd_width-height*4.5-h/2 - 1),text='W', font=label_font)
+	draw.text((epd_height-xborder_right+2,epd_width-height*3.5-h/2 - 1),text='C', font=label_font)
+	draw.text((epd_height-xborder_right+2,epd_width-height*2.5-h/2 - 1),text='R', font=label_font)
+	draw.text((epd_height-xborder_right+2,epd_width-height*1.5-h/2 - 1),text='P', font=label_font)
+	draw.text((epd_height-xborder_right+2,epd_width-height*0.5-h/2 - 1),text='H', font=label_font
+	)
+
+	w,h = draw.textsize(end_label)
 	draw.text((0, epd_width-height*amount-h), text=start_label)
 	draw.text((epd_height-xborder_right-w, epd_width-height*amount-h), text=end_label)

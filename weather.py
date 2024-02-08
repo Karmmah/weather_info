@@ -1,8 +1,17 @@
 #!/bin/python3
-#script for getting weather and forecast data and displaying it on a waveshare epaper display using a raspberrypi
+
+#script for getting weather and forecast data 
+#displaying it on a waveshare epaper display using a raspberrypi
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
 
+
 import sys, time
+
+if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
+	print("Launch options:")
+	print("  -h or -help to show this help dialog")
+	print("  -t or -test for test mode without logging to file")
+	exit()
 
 ressourcedir = "/home/pi/weather_info"
 
@@ -66,32 +75,26 @@ def update_screen(token,town):
 	epd.display(epd.getbuffer(image))
 
 
-def print_help():
-	print("Launch options:")
-	print("  -h or -help to show this help dialog")
-	print("  -t or -test for test mode without logging to file")
-
-
 def main():
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		print("Test Mode")
 
+	print("Starting and configuring weather.py")
+	update_interval = 3600 #seconds (once every hour)
+
+	with open(ressourcedir+"/openweathermap_token.txt") as f:
+		token = f.read().rstrip("\n")
+
+	with open(ressourcedir+"/town.txt") as f:
+		town = f.read().rstrip("\n")
+	print("Selected Town: "+town)
+
 	try:
-		print("Starting and configuring weather.py")
-		update_interval = 3600 #seconds (once every hour)
-
-		with open(ressourcedir+"/openweathermap_token.txt") as f:
-			token = f.read().rstrip("\n")
-
 		print("Starting and initialising e-paper module")
 		global epd
 		epd = epd2in13_V2.EPD()
 		epd.init(epd.FULL_UPDATE)
 		epd.Clear(0xFF)
-
-		with open(ressourcedir+"/town.txt") as f:
-			town = f.read().rstrip("\n")
-		print("Selected Town: "+town)
 
 		print("Starting program loop")
 		last_update_time = 0
@@ -105,8 +108,8 @@ def main():
 			while time.time() < last_update_time + update_interval:
 				time.sleep(60) #seconds offset to compensate length of the update process
 
-	except IOError as e:
-		print(e)
+	except Exception as err:
+		print(err)
 
 	except KeyboardInterrupt:
 		print("\nProgram stopped")
@@ -121,9 +124,5 @@ def main():
 		epd2in13_V2.epdconfig.module_exit()
 
 if __name__ == "__main__":
-	if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
-		print_help()
-
-	else:
-		main()
+	main()
 
