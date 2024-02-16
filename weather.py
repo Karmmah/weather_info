@@ -24,10 +24,12 @@ import epd2in13_V2
 #forecast (for each entry): [z_string,z_float,t,s,c,r,p,h]
 
 
-def logging(current,forecast): #logging weather and forecast for later analysis of forecast accuracy
+def logging(current,forecast):
+	#logging weather and forecast for later analysis of forecast accuracy
 	with open("weather_log.txt","a") as log:
 
-		if time.localtime().tm_hour in [0,6,12,18]: #four times a day save the current weather
+		if time.localtime().tm_hour in [0,6,12,18]: 
+			#four times a day save the current weather
 			t = time.strftime('%Y.%m.%d-%H:%M:%S ')
 			log.write("Current: " + t + str(int(time.time())) + " ")
 
@@ -47,36 +49,10 @@ def logging(current,forecast): #logging weather and forecast for later analysis 
 import weather_tools,weather_gui
 
 
-def update_screen(token,town):
-	global epd
-
-	try:
-		current = weather_tools.get_current_weather(token,town)
-	except Exception as err:
-		print(f"ERROR: {err}")
-		return None
-	print("Received current weather")
-
-	try:
-		forecast = weather_tools.get_forecast(token,town)
-	except Exception as err:
-		print(f"ERROR: {err}")
-		return None
-	print("Received forecast data")
-
-	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
-		print("test, no logging to file")
-
-	else:
-		logging(current,forecast)
-
-	print("epd.width:", epd.width, "epd.height:", epd.height)
-	image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
-	epd.display(epd.getbuffer(image))
-
 
 def main():
-	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+	if len(sys.argv) > 1 and\
+			(sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		print("Test Mode")
 
 	print("Starting and configuring weather.py")
@@ -100,16 +76,37 @@ def main():
 		last_update_time = 0
 		while True: #loop that runs to update screen each update interval
 			epd.init(epd.FULL_UPDATE)
-			update_screen(token,town)
+
+			try:
+				print("Received current weather")
+				current = weather_tools.get_current_weather(token,town)
+				print(f"len(current): {len(current)}")
+
+				print("Received forecast data")
+				forecast = weather_tools.get_forecast(token,town)
+				print(f"len(forecast): {len(forecast)}")
+			
+				if len(sys.argv) > 1 and\
+						(sys.argv[1] == "-t" or sys.argv[1] == "--"):
+					print("test mode: no logging to file")
+				else:
+					logging(current,forecast)
+
+				print("epd.width:", epd.width, "epd.height:", epd.height)
+				image = weather_gui.get_image(\
+					epd.width,epd.height,town,current,forecast)
+				epd.display(epd.getbuffer(image))
+
+			except Exception as err:
+				print(f"ERROR: {err}")
+
 			epd.sleep()
 			last_update_time = time.time()
 			print("Power saving mode (Ctrl+c to stop program)\n")
 
 			while time.time() < last_update_time + update_interval:
-				time.sleep(60) #seconds offset to compensate length of the update process
-
-	except Exception as err:
-		print(err)
+				#seconds offset to compensate length of the update process
+				time.sleep(60)
 
 	except KeyboardInterrupt:
 		print("\nProgram stopped")
@@ -122,6 +119,7 @@ def main():
 
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
+
 
 if __name__ == "__main__":
 	main()
