@@ -18,7 +18,7 @@ def get_image(epd_width, epd_height, town, current, forecast):
 	image = Image.new('1',(epd_height,epd_width),255)
 	draw = ImageDraw.Draw(image)
 
-	# add general info 
+	# draw general info 
 	w,h = draw.textsize(town)
 	draw.text((epd_height-w, 56), text=town)
 	_time_ = time.strftime('%H:%M:%S')
@@ -31,7 +31,7 @@ def get_image(epd_width, epd_height, town, current, forecast):
 		ip = "No connection"
 	draw.text((epd_height-78, epd_width-10), text = ip)
 
-	# add big current general weather info
+	# draw big current general weather info
 	temp = current[0]
 	w,h = draw.textsize(temp,font=large_font)
 	draw.text( (238-w,7), text=temp, font=large_font, outline=0 )
@@ -39,26 +39,14 @@ def get_image(epd_width, epd_height, town, current, forecast):
 	condition = current[1]
 	draw.text( (183,47), text=condition, font=small_font )
 
-	# add wind gauge
+	# draw wind gauge
 	radius = 20 #pixels
-	center = (epd_height-radius-1, epd_width-radius-10)
+	center = (epd_height-radius-1, epd_width-radius-13)
 	angle,wind_speed = current[2],current[3]
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
-	# get min and max values for each displayed value
-	#initial min/max for temp,windspeed,clouds,rain,pressure,humidity
-	min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]]
-
-	for i in range(2,len(forecast[0])):
-		for j in range(len(forecast)):
-			if forecast[j][i] < min_max[i-2][0]:
-				min_max[i-2][0] = forecast[j][i]
-			if forecast[j][i] > min_max[i-2][1]:
-				min_max[i-2][1] = forecast[j][i]
-
-	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
-	start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10]
-	draw_graphical_forecast(epd_width,epd_height,draw,forecast,min_max,start_label,end_label)
+	# draw graphical forecast
+	draw_graphical_forecast(epd_width,epd_height,draw,forecast)
 
 	return image
 
@@ -101,7 +89,19 @@ def draw_windgauge(draw,center,radius,wind_speed,angle):
 	draw.text((center[0]-w/2,center[1]-h*7/11),text=wind_speed,font=text_font,fill=1,align='center')
 
 
-def draw_graphical_forecast(epd_width, epd_height, draw, forecast, min_max, start_label, end_label):
+def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
+
+	min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]]
+
+	for i in range(2,len(forecast[0])):
+		for j in range(len(forecast)):
+			if forecast[j][i] < min_max[i-2][0]:
+				min_max[i-2][0] = forecast[j][i]
+			if forecast[j][i] > min_max[i-2][1]:
+				min_max[i-2][1] = forecast[j][i]
+
+	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
+	start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10]
 	xborder_right = 108
 
 	#how many lines to draw; subtract two first entries which are just time and date
