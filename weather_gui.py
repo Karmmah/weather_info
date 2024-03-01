@@ -24,6 +24,7 @@ def get_image(epd_width, epd_height, town, current, forecast):
 	_time_ = time.strftime('%H:%M:%S')
 	w,h = draw.textsize(_time_, font=text_font)
 	draw.text((175, -5), text=_time_, font=text_font)
+
 	try:
 		ip = subprocess.check_output("hostname -I", shell=True, text=True)
 		ip = ip.split(" ")[0]
@@ -34,10 +35,9 @@ def get_image(epd_width, epd_height, town, current, forecast):
 	# draw big current general weather info
 	temp = current[0]
 	w,h = draw.textsize(temp,font=large_font)
-	draw.text( (238-w,7), text=temp, font=large_font, outline=0 )
-	draw.text( (238,17), text='*C')
-	condition = current[1]
-	draw.text( (183,47), text=condition, font=small_font )
+	draw.text((238-w,7), text=temp, font=large_font, outline=0)
+	draw.text((238,17), text='*C')
+	draw.text((183,47), text=current[1], font=small_font) #condition
 
 	# draw wind gauge
 	radius = 20 #pixels
@@ -46,7 +46,7 @@ def get_image(epd_width, epd_height, town, current, forecast):
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
 	# draw graphical forecast
-	draw_graphical_forecast(epd_width,epd_height,draw,forecast)
+	draw_graphical_forecast(epd_width, epd_height, draw, forecast)
 
 	return image
 
@@ -108,7 +108,6 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 	data_lines_count = 6 #len(forecast[0])-2
 
 	width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/data_lines_count
-	width *= 0.88 #correction factor for proper layout
 
 	#draw border
 	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*data_lines_count)])
@@ -116,24 +115,23 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 	# draw vertical separators
 	for j in range(0, len(forecast)):
 		if forecast[j][0][11:13] == "00":
-			draw.line([(j*width,epd_width),(j*width,epd_width-height*data_lines_count)], width=1)
+			draw.line([(j*width, epd_width), (j*width,epd_width-height*data_lines_count)], width=1)
 
 	#draw data lines
 	for i in range(data_lines_count):
 
 		# horizontal line
-		if i!=0:
+		if i != 0:
 			draw.line([(0,epd_width-height*i-1), (22,epd_width-height*i-1)])
 			draw.line([(epd_height-xborder_right-37,epd_width-height*i-1), (epd_height-xborder_right,epd_width-height*i-1)])
 
-		y0 = epd_width-height*(data_lines_count)+(i+1)*height
-		value = (float(forecast[0][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
-		y_left = y0-height*value
+		y0 = epd_width-height * (data_lines_count) + (i+1) * height
+		value = (float(forecast[0][i+2])-min_max[i][0]) / (min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
+		y_left = y0 - height * value
 
 		# draw entries
 		polygon_points = [len(forecast)*width, y0, 0, y0] #add lower corners first
 		for j in range(0,len(forecast)):
-			print(j)
 			value = (float(forecast[j][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
 			x = j*width
 			y = y0-height*value
@@ -150,13 +148,12 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 	# labels
 	label_font = text_font
 	w,h = draw.textsize('W', font=label_font)
-
-	draw.text( (epd_height-xborder_right+2, epd_width-height*5.5-h/2-1), text='T', font=label_font)
-	draw.text( (epd_height-xborder_right+2, epd_width-height*4.5-h/2-1), text='W', font=label_font)
-	draw.text( (epd_height-xborder_right+2, epd_width-height*3.5-h/2-1), text='C', font=label_font)
-	draw.text( (epd_height-xborder_right+2, epd_width-height*2.5-h/2-1), text='R', font=label_font)
-	draw.text( (epd_height-xborder_right+2, epd_width-height*1.5-h/2-1), text='P', font=label_font)
-	draw.text( (epd_height-xborder_right+2, epd_width-height*0.5-h/2-1), text='H', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*5.5-h/2-1), text='T', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*4.5-h/2-1), text='W', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*3.5-h/2-1), text='C', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*2.5-h/2-1), text='R', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*1.5-h/2-1), text='P', font=label_font)
+	draw.text((epd_height-xborder_right+3, epd_width-height*0.5-h/2-1), text='H', font=label_font)
 
 	w,h = draw.textsize(end_label)
 	draw.text((0, epd_width-height*data_lines_count-h), text=start_label)
