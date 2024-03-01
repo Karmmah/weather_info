@@ -51,8 +51,10 @@ import weather_tools,weather_gui
 
 
 def main():
-	if len(sys.argv) > 1 and\
-			(sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+	testmode_flag = False
+
+	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
+		testmode_flag = True
 		print("Test Mode")
 
 	print("Starting and configuring weather.py")
@@ -86,24 +88,29 @@ def main():
 				forecast = weather_tools.get_forecast(token,town)
 				print(f"len(forecast): {len(forecast)}")
 			
-				if len(sys.argv) > 1 and\
-						(sys.argv[1] == "-t" or sys.argv[1] == "--"):
+				if testmode_flag:
 					print("test mode: no logging to file")
 				else:
 					logging(current,forecast)
 
-				print("epd.width:", epd.width, "epd.height:", epd.height)
-				image = weather_gui.get_image(\
-					epd.width,epd.height,town,current,forecast)
+				print("creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
+				image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
+
+				print("updating display")
 				epd.display(epd.getbuffer(image))
 
 			except Exception as err:
 				print(f"ERROR: {err}")
 
 			epd.sleep()
+
+			if testmode_flag == True:
+				print("Test Mode: Exiting program")
+				epd2in13_V2.epdconfig.module_exit()
+				exit()
+
 			last_update_time = time.time()
 			print("Power saving mode (Ctrl+c to stop program)\n")
-
 			while time.time() < last_update_time + update_interval:
 				#seconds offset to compensate length of the update process
 				time.sleep(60)

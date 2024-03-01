@@ -105,39 +105,36 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 	xborder_right = 108
 
 	#how many lines to draw; subtract two first entries which are just time and date
-	amount = len(forecast[0])-2
-	width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/amount
+	data_lines_count = 6 #len(forecast[0])-2
+
+	width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/data_lines_count
 	width *= 0.88 #correction factor for proper layout
 
 	#draw border
-	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*amount)])
+	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*data_lines_count)])
 
-	#draw lines
-	for i in range(amount):
+	# draw vertical separators
+	for j in range(0, len(forecast)):
+		if forecast[j][0][11:13] == "00":
+			draw.line([(j*width,epd_width),(j*width,epd_width-height*data_lines_count)], width=1)
+
+	#draw data lines
+	for i in range(data_lines_count):
+
 		# horizontal line
 		if i!=0:
 			draw.line([(0,epd_width-height*i-1), (22,epd_width-height*i-1)])
 			draw.line([(epd_height-xborder_right-37,epd_width-height*i-1), (epd_height-xborder_right,epd_width-height*i-1)])
 
-		y0 = epd_width-height*(amount)+(i+1)*height
-		value = (float(forecast[0][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001)
+		y0 = epd_width-height*(data_lines_count)+(i+1)*height
+		value = (float(forecast[0][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
 		y_left = y0-height*value
 
 		# draw entries
-		polygon_points = [epd_height-xborder_right,y0,0,y0]
+		polygon_points = [len(forecast)*width, y0, 0, y0] #add lower corners first
 		for j in range(0,len(forecast)):
-			# draw vertical separators on first line
-			if i == 0:
-				# vertical lines; at the start of each day
-				if forecast[j][0][11:13] == "00":
-#					draw.line([(j*width,epd_width),(j*width,epd_width-height*amount)], width=2)
-					draw.line([(j*width,epd_width),(j*width,epd_width-height*amount)])
-
-				# at the other data points
-				else:
-					pass #draw.line([(j*width,epd_width),(j*width,epd_width-height*amount)], width=1)
-
-			value = (float(forecast[j][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001)
+			print(j)
+			value = (float(forecast[j][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
 			x = j*width
 			y = y0-height*value
 			polygon_points += [x,y]
@@ -146,7 +143,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 		draw.polygon(polygon_points, fill=0)
 
 		# draw lables for min and max values of each line
-		if i in [0,1,4]:
+		if i in [0,1,4]: #draw only selected min/max valuesmin/max
 			draw.text((epd_height-xborder_right+20,y0-height*0.5),text=str(min_max[i][0]), font=small_font)
 			draw.text((epd_height-xborder_right+20,y0-height*1.0),text=str(min_max[i][1]), font=small_font)
 
@@ -162,5 +159,5 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 	draw.text( (epd_height-xborder_right+2, epd_width-height*0.5-h/2-1), text='H', font=label_font)
 
 	w,h = draw.textsize(end_label)
-	draw.text((0, epd_width-height*amount-h), text=start_label)
-	draw.text((epd_height-xborder_right-w, epd_width-height*amount-h), text=end_label)
+	draw.text((0, epd_width-height*data_lines_count-h), text=start_label)
+	draw.text((epd_height-xborder_right-w, epd_width-height*data_lines_count-h), text=end_label)
