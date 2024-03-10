@@ -112,8 +112,7 @@ def main():
 
 			last_update_hour = time.strftime("%H")
 			print("Power saving mode (Ctrl+c to stop program)\n")
-			while time.strftime("%H") != last_update_hour:
-				print(time.strftime("%H"), "vs", last_update_hour)
+			while time.strftime("%H") == last_update_hour:
 				time.sleep(60)
 
 	except KeyboardInterrupt:
