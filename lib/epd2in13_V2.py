@@ -28,9 +28,13 @@
 #
 
 
+import os, sys
+
+repo_path = os.path.dirname(os.path.abspath(__file__)).rstrip("lib/")
+sys.path.append(repo_path)
+
 import logging
-#from . import epdconfig
-import epdconfig
+from lib import epdconfig
 import numpy as np
 
 # Display resolution

@@ -1,9 +1,12 @@
 #script providing functions for creating an image from weather and forecast data
 
-import time, os, math, subprocess
+import time, os, math, subprocess, sys
 from PIL import Image,ImageDraw,ImageFont
 
-picdir = '/home/pi/weather_info' #where fonts are located
+repo_path = os.path.dirname(os.path.abspath(__file__)).rstrip("src/")
+sys.path.append(repo_path)
+
+picdir = '/home/pi/weather_info/lib' #where fonts are located
 
 text_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),20)
 small_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),9)

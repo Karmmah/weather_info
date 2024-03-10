@@ -5,7 +5,11 @@
 #openweathermap token for API access needs to be placed in same directory as this file in a file named "openweathermap_token.txt"
 
 
-import sys, time
+import os, sys, time
+
+repo_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(repo_path)
+sys.path.append(repo_path+"lib")
 
 if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
 	print("Launch options:")
@@ -17,7 +21,7 @@ ressourcedir = "/home/pi/weather_info"
 
 sys.path.append(ressourcedir)
 
-import epd2in13_V2
+from lib import epd2in13_V2
 
 #data structures:
 #current: [temp,condition,wind_angle,wind_speed]
@@ -46,8 +50,7 @@ def logging(current,forecast):
 				log.write(" ")
 			log.write("\n")
 
-import weather_tools,weather_gui
-
+from src import tools, gui
 
 
 def main():
@@ -58,7 +61,6 @@ def main():
 		print("Test Mode")
 
 	print("Starting and configuring weather.py")
-	update_interval = 3600 #seconds (once every hour)
 
 	with open(ressourcedir+"/openweathermap_token.txt") as f:
 		token = f.read().rstrip("\n")
@@ -75,17 +77,16 @@ def main():
 		epd.Clear(0xFF)
 
 		print("Starting program loop")
-		last_update_time = 0
-		while True: #loop that runs to update screen each update interval
+		while True: #loop that runs to update screen
 			epd.init(epd.FULL_UPDATE)
 
 			try:
 				print("Received current weather")
-				current = weather_tools.get_current_weather(token,town)
+				current = tools.get_current_weather(token,town)
 				print(f"len(current): {len(current)}")
 
 				print("Received forecast data")
-				forecast = weather_tools.get_forecast(token,town)
+				forecast = tools.get_forecast(token,town)
 				print(f"len(forecast): {len(forecast)}")
 			
 				if testmode_flag:
@@ -94,7 +95,7 @@ def main():
 					logging(current,forecast)
 
 				print("creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
-				image = weather_gui.get_image(epd.width,epd.height,town,current,forecast)
+				image = gui.get_image(epd.width,epd.height,town,current,forecast)
 
 				print("updating display")
 				epd.display(epd.getbuffer(image))
@@ -109,10 +110,10 @@ def main():
 				epd2in13_V2.epdconfig.module_exit()
 				exit()
 
-			last_update_time = time.time()
+			last_update_hour = time.strftime("%H")
 			print("Power saving mode (Ctrl+c to stop program)\n")
-			while time.time() < last_update_time + update_interval:
-				#seconds offset to compensate length of the update process
+			while time.strftime("%H") != last_update_hour:
+				print(time.strftime("%H"), "vs", last_update_hour)
 				time.sleep(60)
 
 	except KeyboardInterrupt:
@@ -122,7 +123,7 @@ def main():
 
 	except Exception as e:
 		with open("errors.txt","a") as f:
-			f.write(time.strftime('%Y.%m.%d-%H:%M:%S ')+"error:"+str(e))
+			f.write(time.strftime('%Y.%m.%d-%H:%M:%S ')+"error:"+str(e)+"\n")
 
 	finally:
 		epd2in13_V2.epdconfig.module_exit()
