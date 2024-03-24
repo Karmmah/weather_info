@@ -104,16 +104,19 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 				min_max[i-2][1] = forecast[j][i]
 
 	min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
+
 	start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10]
-	xborder_right = 108
+	#xborder_right = 108
+	forecast_width = 141
 
 	#how many lines to draw; subtract two first entries which are just time and date
 	data_lines_count = 6 #len(forecast[0])-2
 
-	width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/data_lines_count
+	#width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/data_lines_count
+	width, height = forecast_width/len(forecast), (epd_width-9)/data_lines_count
 
 	#draw border
-	draw.rectangle([(1,epd_width),(epd_height-xborder_right,epd_width-height*data_lines_count)])
+	draw.rectangle([(1,epd_width), (forecast_width, epd_width-height*data_lines_count)])
 
 	# draw vertical separators
 	for j in range(0, len(forecast)):
@@ -126,7 +129,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 		# horizontal line
 		if i != 0:
 			draw.line([(0,epd_width-height*i-1), (22,epd_width-height*i-1)])
-			draw.line([(epd_height-xborder_right-37,epd_width-height*i-1), (epd_height-xborder_right,epd_width-height*i-1)])
+			draw.line([(forecast_width-37,epd_width-height*i-1), (forecast_width,epd_width-height*i-1)])
 
 		y0 = epd_width-height * (data_lines_count) + (i+1) * height
 		value = (float(forecast[0][i+2])-min_max[i][0]) / (min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
@@ -144,20 +147,20 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 		draw.polygon(polygon_points, fill=0)
 
 		# draw lables for min and max values of each line
-		if i in [0,1,4]: #draw only selected min/max valuesmin/max
-			draw.text((epd_height-xborder_right+20,y0-height*0.5),text=str(min_max[i][0]), font=small_font)
-			draw.text((epd_height-xborder_right+20,y0-height*1.0),text=str(min_max[i][1]), font=small_font)
+		if i in [0,1,4]: #draw only selected min/max values
+			draw.text((forecast_width+20,y0-height*0.5),text=str(min_max[i][0]))
+			draw.text((forecast_width+20,y0-height*1.0+1),text=str(min_max[i][1]))
 
 	# labels
 	label_font = text_font
 	w,h = draw.textsize('W', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*5.5-h/2-1), text='T', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*4.5-h/2-1), text='W', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*3.5-h/2-1), text='C', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*2.5-h/2-1), text='R', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*1.5-h/2-1), text='P', font=label_font)
-	draw.text((epd_height-xborder_right+3, epd_width-height*0.5-h/2-1), text='H', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*5.5-h/2-1), text='T', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*4.5-h/2-1), text='W', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*3.5-h/2-1), text='C', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*2.5-h/2-1), text='R', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*1.5-h/2-1), text='P', font=label_font)
+	draw.text((forecast_width+3, epd_width-height*0.5-h/2-1), text='H', font=label_font)
 
 	w,h = draw.textsize(end_label)
 	draw.text((0, epd_width-height*data_lines_count-h), text=start_label)
-	draw.text((epd_height-xborder_right-w, epd_width-height*data_lines_count-h), text=end_label)
+	draw.text((forecast_width-w, epd_width-height*data_lines_count-h), text=end_label)
