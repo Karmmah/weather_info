@@ -7,21 +7,21 @@
 
 import os, sys, time
 
+if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
+	print("Weather.py options:")
+	print("  -h or --help to show this help dialog")
+	print("  -t or --test for test mode without logging to file")
+	exit()
+
+
+from lib import epd2in13_V2
+from src import tools, gui
+
 repo_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(repo_path)
 sys.path.append(repo_path+"lib")
-
-if len(sys.argv) > 1 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
-	print("Launch options:")
-	print("  -h or -help to show this help dialog")
-	print("  -t or -test for test mode without logging to file")
-	exit()
-
 ressourcedir = "/home/pi/weather_info"
-
 sys.path.append(ressourcedir)
-
-from lib import epd2in13_V2
 
 #data structures:
 #current: [temp,condition,wind_angle,wind_speed]
@@ -50,73 +50,71 @@ def logging(current,forecast):
 				log.write(" ")
 			log.write("\n")
 
-from src import tools, gui
-
 
 def main():
 	testmode_flag = False
 
 	if len(sys.argv) > 1 and (sys.argv[1] == "-t" or sys.argv[1] == "--test"):
 		testmode_flag = True
-		print("Test Mode")
+		print("[!] Test Mode")
 
-	print("Starting and configuring weather.py")
+	print("[#] Starting and configuring weather.py")
 
 	with open(ressourcedir+"/openweathermap_token.txt") as f:
 		token = f.read().rstrip("\n")
 
 	with open(ressourcedir+"/town.txt") as f:
 		town = f.read().rstrip("\n")
-	print("Selected Town: "+town)
+	print("[!] Selected Town: "+town)
 
 	try:
-		print("Starting and initialising e-paper module")
+		print("[#] Starting and initialising e-paper module")
 		global epd
 		epd = epd2in13_V2.EPD()
 		epd.init(epd.FULL_UPDATE)
 		epd.Clear(0xFF)
 
-		print("Starting program loop")
+		print("[#] Starting program loop")
 		while True: #loop that runs to update screen
 			epd.init(epd.FULL_UPDATE)
 
 			try:
-				print("Received current weather")
 				current = tools.get_current_weather(token,town)
-				print(f"len(current): {len(current)}")
+				print("[!] Received current weather")
+				print(f"[#] len(current): {len(current)}")
 
-				print("Received forecast data")
 				forecast = tools.get_forecast(token,town)
-				print(f"len(forecast): {len(forecast)}")
+				print("[!] Received forecast data")
+				print(f"[#] len(forecast): {len(forecast)}")
 			
 				if testmode_flag:
-					print("test mode: no logging to file")
+					print("[!] test mode: no logging to file")
 				else:
 					logging(current,forecast)
 
-				print("creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
+				print("[#] creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
 				image = gui.get_image(epd.width,epd.height,town,current,forecast)
 
-				print("updating display")
+				print("[#] updating display")
 				epd.display(epd.getbuffer(image))
 
 			except Exception as err:
-				print(f"ERROR: {err}")
+				print(f"[!] ERROR: {err}")
 
 			epd.sleep()
 
 			if testmode_flag == True:
-				print("Test Mode: Exiting program")
+				print("[!] Test Mode: Exiting program")
 				epd2in13_V2.epdconfig.module_exit()
 				exit()
 
 			last_update_hour = time.strftime("%H")
-			print("Power saving mode (Ctrl+c to stop program)\n")
+			print("[!] Power saving mode (Ctrl+c to stop program)\n")
 			while time.strftime("%H") == last_update_hour:
 				time.sleep(60)
 
 	except KeyboardInterrupt:
-		print("\nProgram stopped")
+		print("\n[!] Program stopped")
 		epd2in13_V2.epdconfig.module_exit()
 		exit()
 

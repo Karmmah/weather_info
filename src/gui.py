@@ -18,16 +18,19 @@ large_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),42)
 
 
 def get_image(epd_width, epd_height, town, current, forecast):
+
 	image = Image.new('1',(epd_height,epd_width),255)
 	draw = ImageDraw.Draw(image)
 
-	# draw general info 
+	# add town and time info 
+	#time_str = time.strftime('%H:%M:%S')
+	time_str = time.strftime('%H:%M')
+	w,h = draw.textsize(time_str, font=text_font)
+	draw.text((epd_height-w, epd_width-30), text=time_str, font=text_font)
 	w,h = draw.textsize(town)
-	draw.text((epd_height-w, 56), text=town)
-	_time_ = time.strftime('%H:%M:%S')
-	w,h = draw.textsize(_time_, font=text_font)
-	draw.text((175, -5), text=_time_, font=text_font)
+	draw.text((epd_height-w, epd_width-37), text=town)
 
+	# add connection info
 	try:
 		ip = subprocess.check_output("hostname -I", shell=True, text=True)
 		ip = ip.split(" ")[0]
@@ -35,20 +38,20 @@ def get_image(epd_width, epd_height, town, current, forecast):
 		ip = "No connection"
 	draw.text((epd_height-78, epd_width-10), text = ip)
 
-	# draw big current general weather info
+	# add big condition info
 	temp = current[0]
 	w,h = draw.textsize(temp,font=large_font)
-	draw.text((238-w,7), text=temp, font=large_font, outline=0)
-	draw.text((238,17), text='*C')
-	draw.text((183,47), text=current[1], font=small_font) #condition
+	draw.text((238-w,-1), text=temp, font=large_font, outline=0)
+	draw.text((238,7), text='*C')
+	draw.text((183,-3), text=current[1], font=small_font) #condition
 
-	# draw wind gauge
+	# add wind gauge
 	radius = 20 #pixels
-	center = (epd_height-radius-1, epd_width-radius-13)
+	center = (epd_height-radius-1, 64)
 	angle,wind_speed = current[2],current[3]
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
-	# draw graphical forecast
+	# add graphical forecast
 	draw_graphical_forecast(epd_width, epd_height, draw, forecast)
 
 	return image
@@ -83,13 +86,14 @@ def draw_today(draw, forecast, min_max, epd_width, epd_height):
 			y0 = y1
 
 
-def draw_windgauge(draw,center,radius,wind_speed,angle):
+def draw_windgauge(draw, center, radius, wind_speed, angle):
 	w, h = draw.textsize(wind_speed,font=text_font)
 	draw.ellipse((center[0]-radius,center[1]-radius,center[0]+radius,center[1]+radius),width=2)
-	draw.line([center,(center[0]+radius*math.cos(angle),center[1]-radius*math.sin(angle))],width=5)
-	draw.line([center,(center[0]+radius*math.cos(angle+math.pi),center[1]-radius*math.sin(angle+math.pi))])
+	draw.line([center,(center[0]+radius*math.cos(angle),center[1]-radius*math.sin(angle))], width=3)
+	draw.line([center,(center[0]+radius*math.cos(angle-0.8*math.pi),center[1]-radius*math.sin(angle-0.8*math.pi))], width=3)
+	draw.line([center,(center[0]+radius*math.cos(angle+0.8*math.pi),center[1]-radius*math.sin(angle+0.8*math.pi))], width=3)
 	draw.ellipse((center[0]-radius/2,center[1]-radius/2,center[0]+radius/2,center[1]+radius/2),fill=0)
-	draw.text((center[0]-w/2,center[1]-h*7/11),text=wind_speed,font=text_font,fill=1,align='center')
+	draw.text((center[0]-w/2+1,center[1]-h*0.6),text=wind_speed,font=text_font,fill=1,align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
