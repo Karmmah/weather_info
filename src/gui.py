@@ -7,7 +7,6 @@ repo_path = os.path.dirname(os.path.abspath(__file__)).rstrip("src/")
 sys.path.append(repo_path)
 
 picdir = '/home/pi/weather_info/lib' #where fonts are located
-
 text_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),20)
 small_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),9)
 large_font = ImageFont.truetype(os.path.join(picdir,'Font.ttc'),42)
@@ -38,20 +37,20 @@ def get_image(epd_width, epd_height, town, current, forecast):
 		ip = "No connection"
 	draw.text((epd_height-78, epd_width-10), text = ip)
 
-	# add big condition info
+	# big condition info
 	temp = current[0]
 	w,h = draw.textsize(temp,font=large_font)
 	draw.text((238-w,-1), text=temp, font=large_font, outline=0)
 	draw.text((238,7), text='*C')
 	draw.text((183,-3), text=current[1], font=small_font) #condition
 
-	# add wind gauge
+	# wind gauge
 	radius = 20 #pixels
 	center = (epd_height-radius-1, 64)
 	angle,wind_speed = current[2],current[3]
 	draw_windgauge(draw,center,radius,wind_speed,angle)
 
-	# add graphical forecast
+	# graphical forecast
 	draw_graphical_forecast(epd_width, epd_height, draw, forecast)
 
 	return image

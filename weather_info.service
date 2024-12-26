@@ -1,11 +1,14 @@
 [Unit]
-Description= Weather display script for waveshare epaper HAT
+Description=Weather display script for waveshare epaper HAT
 Wants=network-online.target
 After=network-online.target
 
 [Service]
+WorkingDirectory=/home/pi/weather_info/
+User=pi
 ExecStart=/bin/python3 /home/pi/weather_info/weather.py
 Restart=on-failure
+Environment="PYTHONPATH=$PYTHONPATH:/home/pi/.local/lib/python3.9/site-packages"
 
 [Install]
 WantedBy=multi-user.target
