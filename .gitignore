@@ -1,6 +1,7 @@
 openweathermap_token.txt
 #weather_log.txt
 weather_log*
+weatherLog*
 errors.txt
 error.txt
 town.txt
