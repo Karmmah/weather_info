@@ -5,6 +5,7 @@ weatherLog*
 errors.txt
 error.txt
 town.txt
+index.html
 
 *.pyc
 *.py.save

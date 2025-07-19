@@ -59,11 +59,15 @@ def updateInfoFile(currentData):
 <body>
     <center>
     <h1>Weather Info Status</h1>
-    <p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>
-    <p>Temperature: <span id="temp">{currentData[0]}</span>
-    <p>Wind: <span id="wind">{currentData[3]}</span>
+    <div style="background:#abcdef">
+        <p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>
+    </div>
+    <div style="background=#ffcdef">
+        <img src="graphicalForecast.jpg" alt="graphical forecast" style="width:500px">
+    </div>
 </body>
-</html>"""
+</html>
+"""
     fileName = "index.html"
     print(f"[!] writing to {fileName}")
     with open(fileName, "w") as f:
@@ -97,7 +101,7 @@ def main():
         epd.init(epd.FULL_UPDATE)
 
         currentDataRaw = tools.get_current_weather(token,town)
-        print("[ ! ] Received current weather")
+        print("[!] Received current weather")
         forecastDataRaw = tools.get_forecast(token,town)
         print("[!] Received forecast data")
 
@@ -115,6 +119,8 @@ def main():
             currentData,
             forecastData,
             )
+        print("[#] Saving graphical forecast image")
+        image.save("graphicalForecast.jpg", "JPEG")
         print("[#] updating display")
         epd.display(epd.getbuffer(image))
 
@@ -127,7 +133,7 @@ def main():
         updateInfoFile(currentData)
 
         if testmode_flag == True: #only run loop once when in test mode
-            print("[!] Test Mode: Exiting program")
+            print("[!] Test Mode: SUCCESS, Exiting program")
             epd2in13_V2.epdconfig.module_exit()
             exit()
 
