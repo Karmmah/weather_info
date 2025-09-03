@@ -11,8 +11,14 @@ def get_current_weather(token,town):
     url = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"%(town,token)
     #print(f"[-] requesting data from {url}")
     print(f"[-] requesting current data from api.openweathermap.org")
-    data = requests.get(url).json()
-    return data
+    try:
+        response = requests.get(url)
+        response.raise_for_status() #raises an error if response code is an error (4xx,5xx)
+        return response.json()
+    except requests.exceptions.RequestException as err:
+        with open("errors.txt", 'a') as f:
+            f.write(err)
+        return []
 
 
 def convertCurrentDisplayData(data):
@@ -32,8 +38,14 @@ def get_forecast(token,town):
     url = "https://api.openweathermap.org/data/2.5/forecast?q=%s&%i&appid=%s"%(town,dataPointsLength,token)
     #print(f"[-] requesting data from {url}")
     print(f"[-] requesting forecast data from api.openweathermap.org")
-    url_data = requests.get(url).json()
-    return url_data
+    try:
+        response = requests.get(url)
+        response.raise_for_status() #raises an error if response code is an error (4xx,5xx)
+        return response.json()
+    except requests.exceptions.RequestException as err:
+        with open("errors.txt", 'a') as f:
+            f.write(err)
+        return []
 
 
 def convertForecastDisplayData(url_data):

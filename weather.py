@@ -63,7 +63,7 @@ def updateInfoFile(currentData):
         <p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>
     </div>
     <div style="background=#ffcdef">
-        <img src="graphicalForecast.jpg" alt="graphical forecast" style="width:500px">
+        <img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">
     </div>
 </body>
 </html>
@@ -120,7 +120,7 @@ def main():
             forecastData,
             )
         print("[#] Saving graphical forecast image")
-        image.save("graphicalForecast.jpg", "JPEG")
+        image.save("graphicalForecast.png", "PNG")
         print("[#] updating display")
         epd.display(epd.getbuffer(image))
 
