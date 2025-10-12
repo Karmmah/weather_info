@@ -33,13 +33,13 @@ ressourcedir = "/home/pi/weather_info"
 sys.path.append(ressourcedir)
 
 
-def logging(currentData, forecastData):
-    filename = "weatherLog.jsonl"
-    with jsonlines.open(filename,"a") as logFile:
+def logging(town, currentData, forecastData):
+    filename = f"weatherLog_{town}.jsonl"
+    with jsonlines.open(filename, "a") as logFile:
         if time.localtime().tm_hour in [0,6,12,18]: 
             logFile.write(currentData)
             print(f"[!] logged current data to {filename}")
-        if time.localtime().tm_hour == 0: #each day save the forecast once
+        if time.localtime().tm_hour == 0: #each day save the forecast once at midnight
             logFile.write(forecastData)
             print(f"[!] logged forecast data to {filename}")
 
@@ -51,22 +51,22 @@ def getOWMToken(): #openweathermap
 
 
 def updateInfoFile(currentData):
-    htmlContent = f"<!DOCTYPE html>\n"
-        "<html>\n"
-        "<head>\n"
-            "<title>Weather Info Status</title>\n"
-        "</head>\n"
-        "<body>\n"
-            "<center>\n"
-            "<h1>Weather Info Status</h1>\n"
-            "<div style="background:#abcdef">\n"
-                "<p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>\n"
-            "</div>\n"
-            "<div style="background=#ffcdef">\n"
-                "<img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">\n"
-            "</div>\n"
-        "</body>\n"
-        "</html>"
+    htmlContent = (f'<!DOCTYPE html>\n'
+        '<html>\n'
+        '<head>\n'
+            '<title>Weather Info Status</title>\n'
+        '</head>\n'
+        '<body>\n'
+            '<center>\n'
+            '<h1>Weather Info Status</h1>\n'
+            '<div style="background:#abcdef">\n'
+                f'<p><span id="updateTime">{time.strftime("%d.%m.%y - %H:%M:%S")}</span>\n'
+            '</div>\n'
+            '<div style="background=#ffcdef">\n'
+                '<img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">\n'
+            '</div>\n'
+        '</body>\n'
+        '</html>')
     fileName = "index.html"
     print(f"[!] writing to {fileName}")
     with open(fileName, "w") as f:
@@ -84,11 +84,11 @@ def main():
 
     token = getOWMToken()
 
-    with open(ressourcedir+"/town.txt") as f:
-        town = f.read().rstrip("\n")
-    print("[!] Selected Town: "+town)
+    with open(ressourcedir+"/towns.txt") as f:
+        towns = list(map(lambda t : t.rstrip('\n'), f.readlines()))
+        displayTown = towns[0] #select town for which data is shown on screen
 
-    return#testing
+    print(f"[!] towns selected: {towns}")
 
     #try:
     print("[#] Starting and initialising e-paper module")
@@ -99,31 +99,35 @@ def main():
 
     print("[#] Starting program loop")
     while True: #loop that runs to update screen
-        epd.init(epd.FULL_UPDATE)
+        #epd.init(epd.FULL_UPDATE)
 
-        currentDataRaw = tools.get_current_weather(token,town)
-        print("[!] Received current weather")
-        forecastDataRaw = tools.get_forecast(token,town)
-        print("[!] Received forecast data")
+        for town in towns:
+            print(f"[!] fetching data for {town}")
+            currentDataRaw = tools.get_current_weather(token, town)
+            print("[!] Received current weather")
+            forecastDataRaw = tools.get_forecast(token, town)
+            print("[!] Received forecast data")
 
-        if testmode_flag:
-            print("[!] test mode: no logging to file")
-        else:
-            logging(currentDataRaw,forecastDataRaw)
+            if testmode_flag:
+                print("[!] test mode: no logging to file")
+            else:
+                logging(town, currentDataRaw,forecastDataRaw)
 
-        print("[#] creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
-        #currentData: [temp,condition,wind_angle,wind_speed]
-        currentData = tools.convertCurrentDisplayData(currentDataRaw)
-        #forecastData (for each data point in the future): [z_string,z_float,t,s,c,r,p,h]
-        forecastData = tools.convertForecastDisplayData(forecastDataRaw)
-        image = gui.get_image(epd.width,epd.height,town,
-            currentData,
-            forecastData,
-            )
-        print("[#] Saving graphical forecast image")
-        image.save("graphicalForecast.png", "PNG")
-        print("[#] updating display")
-        epd.display(epd.getbuffer(image))
+            if town != displayTown:
+                continue
+
+            print(f"[!] starting weather data display for {town}")
+            epd.init(epd.FULL_UPDATE)
+            print("[#] creating gui (epd.width:", epd.width, "epd.height:", epd.height, ")")
+            #currentData: [temp,condition,wind_angle,wind_speed]
+            currentData = tools.convertCurrentDisplayData(currentDataRaw)
+            #forecastData (for each data point in the future): [z_string,z_float,t,s,c,r,p,h]
+            forecastData = tools.convertForecastDisplayData(forecastDataRaw)
+            image = gui.get_image(epd.width, epd.height, town, currentData, forecastData)
+            print("[#] saving graphical forecast image")
+            image.save("graphicalForecast.png", "PNG")
+            print("[#] updating display")
+            epd.display(epd.getbuffer(image))
 
         #except Exception as err:
         #    print(f"[!] ERROR: {err}")
@@ -160,4 +164,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

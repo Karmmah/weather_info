@@ -4,11 +4,12 @@
 import math, time, requests
 
 
-def get_current_weather(token,town):
+def get_current_weather(token, town):
     if not is_token_valid(token):
         print("Token is not valid")
         return []
-    url = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"%(town,token)
+    #url = "https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s"%(town,token)
+    url = f"https://api.openweathermap.org/data/2.5/weather?q={town}&appid={token}"
     #print(f"[-] requesting data from {url}")
     print(f"[-] requesting current data from api.openweathermap.org")
     try:
@@ -29,7 +30,7 @@ def convertCurrentDisplayData(data):
     return [temp,condition,wind_angle,wind_speed]
 
 
-def get_forecast(token,town):
+def get_forecast(token, town):
     if not is_token_valid(token):
         print("Token is not valid")
         return []
