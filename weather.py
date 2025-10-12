@@ -44,30 +44,29 @@ def logging(currentData, forecastData):
             print(f"[!] logged forecast data to {filename}")
 
 
-def getOWMToken():
+def getOWMToken(): #openweathermap
     with open(ressourcedir+"/openweathermap_token.txt") as f:
         token = f.read().rstrip("\n")
     return token
 
 
 def updateInfoFile(currentData):
-    htmlContent = f"""<!DOCTYPE html>
-<html>
-<head>
-    <title>Weather Info Status</title>
-</head>
-<body>
-    <center>
-    <h1>Weather Info Status</h1>
-    <div style="background:#abcdef">
-        <p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>
-    </div>
-    <div style="background=#ffcdef">
-        <img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">
-    </div>
-</body>
-</html>
-"""
+    htmlContent = f"<!DOCTYPE html>\n"
+        "<html>\n"
+        "<head>\n"
+            "<title>Weather Info Status</title>\n"
+        "</head>\n"
+        "<body>\n"
+            "<center>\n"
+            "<h1>Weather Info Status</h1>\n"
+            "<div style="background:#abcdef">\n"
+                "<p><span id="updateTime">{time.strftime("%d.%m.%y-%H:%M:%S")}</span>\n"
+            "</div>\n"
+            "<div style="background=#ffcdef">\n"
+                "<img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">\n"
+            "</div>\n"
+        "</body>\n"
+        "</html>"
     fileName = "index.html"
     print(f"[!] writing to {fileName}")
     with open(fileName, "w") as f:
@@ -88,6 +87,8 @@ def main():
     with open(ressourcedir+"/town.txt") as f:
         town = f.read().rstrip("\n")
     print("[!] Selected Town: "+town)
+
+    return#testing
 
     #try:
     print("[#] Starting and initialising e-paper module")
