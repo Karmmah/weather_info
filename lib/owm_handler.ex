@@ -17,6 +17,7 @@ defmodule EXW.OWM_Handler do
   def init(_args) do
   	locations = EXW.get_locations()
 	Logger.info "locations: #{inspect(locations)}"
+	IO.puts "api key: #{EXW.get_api_key()}"
 	{:ok, []}
   end
 

@@ -50,4 +50,9 @@ defmodule EXW do
       #IO.puts("locations from config.yaml: #{inspect(locations)}")
 	  locations
   end
+
+  def get_api_key() do
+  	{:ok, key} = File.read("owm_token.txt")
+	key
+  end
 end
