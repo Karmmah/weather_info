@@ -17,7 +17,7 @@ defmodule EXW.Counter do
   # the arguments are the message that was sent and the current state of the GenServer
   @impl true
   def handle_info(:tick, 0) do
-    Logger.info("counting: 0")
+    Logger.info("stopping the application in: 0")
     Logger.warning("manually stopping the application with System.stop")
     # System.stop(status): stops the Erlang runtime asynchronously and carefully
     System.stop(0)
@@ -26,8 +26,8 @@ defmodule EXW.Counter do
   end
 
   def handle_info(:tick, count) when count > 0 do
-    Logger.info("counting: #{count}")
-    Process.send_after(self(), :tick, 300)
+    Logger.info("stopping the application in: #{count}")
+    Process.send_after(self(), :tick, 1000)
     {:noreply, count - 1}
   end
 

@@ -2,23 +2,41 @@ defmodule EXW.OWM_Handler do
   use GenServer
   require Logger
   require Req
-  #require File
-
-  #    File.write("test.txt", "#{counter}\n", [:append])
-  #    data = Req.get!("https://duckduckgo.com")
-  #    # IO.puts "data: #{inspect(data)}"
-  #    IO.puts("data: #{data.status}")
 
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  def fetch_coordinates(city, api_key) do
+    # OWM geocoding api call: http://api.openweathermap.org/geo/1.0/direct?q={city name},{state code},{country code}&limit={limit}&appid={API key}
+    # limit: how many results for the given city name should be shown, if there are multiple available
+    Logger.info("calling OWM API to get coordinates for #{city}")
+    url = "http://api.openweathermap.org/geo/1.0/direct?q=#{city}&limit=1&appid=#{api_key}"
+    {:ok, data} = Req.get(url)
+    city_info = Enum.at(data.body, 0)
+    {:ok, [city_info["lat"], city_info["lon"]]}
+  end
+
   @impl true
   def init(_args) do
-  	locations = EXW.get_locations()
-	Logger.info "locations: #{inspect(locations)}"
-	IO.puts "api key: #{EXW.get_api_key()}"
-	{:ok, []}
+    locations = EXW.get_locations()
+    Logger.info("locations: #{inspect(locations)}")
+    key = EXW.get_api_key()
+    IO.puts("api key: #{key}")
+
+    [lat, lon] =
+      case Mix.env() do
+        :test ->
+          Logger.info("testing: skipping owm api call to get coordinates")
+          [52.5170365, 13.3888599]
+
+        _ ->
+          {:ok, [lat, lon]} = fetch_coordinates("Berlin", key)
+          [lat, lon]
+      end
+
+    IO.puts("coordinates of Berlin: #{lat} #{lon}")
+    {:ok, []}
   end
 
   # only one of the function heads has to be declared as a callback
@@ -26,5 +44,4 @@ defmodule EXW.OWM_Handler do
   @impl true
   def handle_info(:tick, 0) do
   end
-
 end

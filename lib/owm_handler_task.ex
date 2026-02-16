@@ -11,7 +11,7 @@ defmodule EXW.OWM_Handler_Task do
 
   def run(counter) do
     Logger.info("running... #{counter}")
-    #File.write("test.txt", "#{counter}\n", [:append])
+    # File.write("test.txt", "#{counter}\n", [:append])
     # data = Req.get!("https://duckduckgo.com")
     # IO.puts "data: #{inspect(data)}"
     # IO.puts("data: #{data.status}")
