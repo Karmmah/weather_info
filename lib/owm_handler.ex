@@ -19,19 +19,21 @@ defmodule EXW.OWM_Handler do
 
   @impl true
   def init(_args) do
-    locations = EXW.get_locations()
+    locations = EXW.read_locations()
     Logger.info("locations: #{inspect(locations)}")
-    key = EXW.get_api_key()
-    IO.puts("api key: #{key}")
+    key = EXW.read_api_key()
+    # IO.puts("api key: #{key}")
+
+    city_name = "Berlin"
 
     [lat, lon] =
       case Mix.env() do
         :test ->
-          Logger.info("testing: skipping owm api call to get coordinates")
+          Logger.debug("testing: skipping OWM API call to get coordinates for #{city_name}")
           [52.5170365, 13.3888599]
 
         _ ->
-          {:ok, [lat, lon]} = fetch_coordinates("Berlin", key)
+          {:ok, [lat, lon]} = fetch_coordinates(city_name, key)
           [lat, lon]
       end
 

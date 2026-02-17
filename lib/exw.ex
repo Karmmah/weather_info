@@ -30,11 +30,10 @@ defmodule EXW do
 
     children = [
       {Registry, name: EXW, keys: :unique},
-      # Supervisor.child_spec({Task, fn -> EXW.OWM_Handler_Task.hello() end}, id: :hello),
-      # Supervisor.child_spec({Task, fn -> EXW.OWM_Handler_Task.run(3) end}, id: :owm_handler_task),
-      # {EXW.OWM_Handler, 5}
       # %{id: :counter, start: {EXW.Counter, :start_link, [5]}, restart: :temporary},
-      %{id: :owmhandler, start: {EXW.OWM_Handler, :start_link, []}, restart: :temporary}
+      %{id: :owmhandler, start: {EXW.OWM_Handler, :start_link, []}, restart: :temporary},
+      %{id: :controller, start: {EXW.Controller, :start_link, []}}
+      # %{id: :test, start: {EXW, :test, []}}
     ]
 
     # res = Supervisor.start_link(children, strategy: :one_for_one, restart: :transient)
@@ -45,14 +44,12 @@ defmodule EXW do
     # Process.sleep(:infinity)
   end
 
-  def get_locations() do
+  def read_locations() do
     {:ok, data} = YamlElixir.read_from_file("config.yaml")
-    locations = data["locations"]
-    # IO.puts("locations from config.yaml: #{inspect(locations)}")
-    locations
+    data["locations"]
   end
 
-  def get_api_key() do
+  def read_api_key() do
     {:ok, key} = File.read("owm_token.txt")
     String.trim(key)
   end
