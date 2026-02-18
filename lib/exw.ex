@@ -25,23 +25,37 @@ defmodule EXW do
   # impl: this function is a callback
   @impl true
   def start(_type, _args) do
-    Logger.info("EXW started")
-    Logger.debug("Mix env: #{Mix.env()}")
+    # Logger.info("[EXW] started")
+    # Logger.debug("Mix env: #{Mix.env()}")
+    log(:info, "started")
+    log(:debug, "Mix env: #{Mix.env()}")
 
     children = [
       {Registry, name: EXW, keys: :unique},
+      %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}},
+      {DynamicSupervisor, name: EXW.OWMSupervisor, strategy: :one_for_one}
       # %{id: :counter, start: {EXW.Counter, :start_link, [5]}, restart: :temporary},
-      %{id: :owmhandler, start: {EXW.OWM_Handler, :start_link, []}, restart: :temporary},
-      %{id: :controller, start: {EXW.Controller, :start_link, []}}
-      # %{id: :test, start: {EXW, :test, []}}
+      # Supervisor.child_spec({Task, fn -> EXW.OWM.test() end}, restart: :transient)
     ]
 
     # res = Supervisor.start_link(children, strategy: :one_for_one, restart: :transient)
     res = Supervisor.start_link(children, strategy: :one_for_one)
-    Logger.info(">> Supervisor start return value: #{inspect(res)}")
-    Logger.info("finished EXW start")
+    log(:info, "finished start")
     res
     # Process.sleep(:infinity)
+  end
+
+  def log_msg(level, msg) do
+    case level do
+      :info -> Logger.info(msg)
+      :debug -> Logger.debug(msg)
+      :warning -> Logger.warning(msg)
+      :error -> Logger.error(msg)
+    end
+  end
+
+  defp log(level, msg) do
+    log_msg(level, "[#{__MODULE__}] " <> msg)
   end
 
   def read_locations() do
