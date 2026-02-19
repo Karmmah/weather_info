@@ -19,9 +19,9 @@ defmodule EXW.OWM do
   end
 
   # def fetch_data(location, api_key) do
+  #  %{name: name, lat: lat, lon: lon} = location
   #  excludes = "minutely,daily,alerts"
-  #  {lat,lon} = {0,0}
-  # 	url = "https://api.openweathermap.org/data/3.0/onecall?lat=#{lat}&lon=#{lon}&exclude=#{excludes}&appid=#{api_key}"
+  #  url = "https://api.openweathermap.org/data/3.0/onecall?lat=#{lat}&lon=#{lon}&exclude=#{excludes}&appid=#{api_key}"
   #  {:ok, data} = Req.get(url)
   # end
 end

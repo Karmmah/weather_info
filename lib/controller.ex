@@ -50,29 +50,20 @@ defmodule EXW.Controller do
   def handle_info(:sleep, state) do
     # TODO: think about how this deals with summer/winter time
     now = DateTime.utc_now()
-    # if now.hour > state.last_update.hour do
-    # 	send(self(), :update)
-    # 	{:noreply, state}
-    # end
     # remaining time until next hour in seconds
     rem_time = (60 - now.minute - 1) * 60 + (60 - now.second)
 
-    log(
-      :debug,
-      "remaining seconds until next hour: #{rem_time} (now.minute:#{now.minute}, now.second:#{now.second})"
-    )
+    log(:debug, "remaining seconds until next hour: #{rem_time}")
 
     sleep_time =
       case rem_time do
-        _rt when rem_time < 60 ->
-          log(:debug, "sleeping for 60 seconds")
+        rt when rem_time < 60 ->
           send(self(), :update)
-          60
+          rt + 1
 
         rt ->
           send(self(), :sleep)
-          rt - 59
-          # 30
+          rt - 60
       end
 
     log(:debug, "sleeping for #{sleep_time} seconds")
