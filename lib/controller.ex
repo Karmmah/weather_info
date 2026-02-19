@@ -59,11 +59,12 @@ defmodule EXW.Controller do
       case rem_time do
         rt when rem_time < 60 ->
           send(self(), :update)
+		  log(:debug, "sending update message")
           rt + 1
 
         rt ->
           send(self(), :sleep)
-          rt - 60
+          rt - 59
       end
 
     log(:debug, "sleeping for #{sleep_time} seconds")
