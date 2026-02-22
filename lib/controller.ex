@@ -14,28 +14,17 @@ defmodule EXW.Controller do
   def init(_init_state) do
     api_key = EXW.read_api_key()
 
-    # TODO
-    # store fetched coordinates
-    # fetch only if coordinates are not already stored
-    locations =
-      EXW.read_locations()
-      |> Enum.reduce(
-        [],
-        fn loc, acc ->
-          {:ok, [lat, lon]} = EXW.OWM.fetch_coordinates(loc, api_key)
-          [%{name: loc, lat: lat, lon: lon} | acc]
-        end
-      )
+    locations = EXW.get_locations(api_key)
 
     state = %{
       key: api_key,
       locations: locations,
-      last_update: DateTime.utc_now()
+      last_update: DateTime.utc_now(),
+      current_data: [],
+      forecast_data: []
     }
 
-    log(:debug, "state: #{inspect(state)}")
-
-    # DynamicSupervisor.start_child(EXW.OWMSupervisor, {Task, fn -> EXW.OWM.test() end})
+    # log(:debug, "state: #{inspect(state)}")
 
     send(self(), :update)
 
@@ -59,7 +48,7 @@ defmodule EXW.Controller do
       case rem_time do
         rt when rem_time < 60 ->
           send(self(), :update)
-		  log(:debug, "sending update message")
+          log(:debug, "sending update message")
           rt + 1
 
         rt ->
@@ -75,8 +64,43 @@ defmodule EXW.Controller do
 
   def handle_info(:update, state) do
     log(:info, "This is an update...")
+
+    # DynamicSupervisor.start_child(EXW.OWMSupervisor, {Task, fn location -> EXW.OWM.fetch_current_weather_data(location, state.key) end})
+    # state.locations
+    # |> Enum.reduce(
+    # 	[],
+    # 	fn loc, acc ->
+    # 		DynamicSupervisor.start_child(EXW.OWMSupervisor, {Task, fn loc -> EXW.OWM.fetch_current_weather_data(loc, state.key))
+    # 	end
+    # 	)
+    tasks =
+      Enum.map(state.locations, fn loc ->
+        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+          EXW.OWM.fetch_current_weather_data(loc, state.key)
+        end)
+      end)
+
+    current_data =
+      Enum.reduce(tasks, [], fn task, acc ->
+        case Task.await(task, 5000) do
+          {:ok, result} ->
+            [result | acc]
+
+          {:exit, reason} ->
+            log(:error, "Task failed #{inspect(reason)}")
+            acc
+        end
+      end)
+
+    log(:debug, "current data: #{inspect(current_data)}")
+	#send(:storage, {:update_current, current_data})
+
+    new_state =
+      Map.put(state, :last_update, DateTime.utc_now())
+      |> Map.put(:current_data, current_data)
+
     send(self(), :sleep)
-    {:noreply, state}
+    {:noreply, new_state}
   end
 
   def handle_info(msg, state) do
