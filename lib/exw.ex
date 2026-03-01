@@ -32,7 +32,7 @@ defmodule EXW do
       {Registry, name: EXW, keys: :unique},
       %{id: :storage, start: {EXW.Storage, :start_link, [[name: :storage]]}},
       {Task.Supervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
-      %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}},
+      %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}}
       # {DynamicSupervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
       # %{id: :counter, start: {EXW.Counter, :start_link, [5]}, restart: :temporary},
       # Supervisor.child_spec({Task, fn -> EXW.OWM.test() end}, restart: :transient)

@@ -20,7 +20,7 @@ defmodule EXW.Controller do
       key: api_key,
       locations: locations,
       last_update: DateTime.utc_now(),
-      current_data: [],
+      current_data: %{},
       forecast_data: []
     }
 
@@ -63,16 +63,39 @@ defmodule EXW.Controller do
   end
 
   def handle_info(:update, state) do
-    log(:info, "This is an update...")
+    now = DateTime.utc_now()
 
-    # DynamicSupervisor.start_child(EXW.OWMSupervisor, {Task, fn location -> EXW.OWM.fetch_current_weather_data(location, state.key) end})
-    # state.locations
-    # |> Enum.reduce(
-    # 	[],
-    # 	fn loc, acc ->
-    # 		DynamicSupervisor.start_child(EXW.OWMSupervisor, {Task, fn loc -> EXW.OWM.fetch_current_weather_data(loc, state.key))
-    # 	end
-    # 	)
+    log(
+      :info,
+      "Update started on #{Calendar.strftime(now, "%d.%m.%y")} at #{Calendar.strftime(now, "%H:%M:%S")}"
+    )
+
+    new_state =
+      state
+      |> update_current_weather_data()
+      |> update_forecast_weather_data()
+      |> Map.put(:last_update, DateTime.utc_now())
+
+	# when starting up force the forecast data update
+	new_state =
+		case new_state.forecast_data do
+			[] -> update_forecast_weather_data(new_state, :forced)
+			_ -> new_state
+		end
+
+	log(:debug, "current data: #{inspect(new_state.current_data)}")
+	log(:debug, "forecast data: #{inspect(new_state.forecast_data)}")
+
+    send(self(), :sleep)
+    {:noreply, new_state}
+  end
+
+  def handle_info(msg, state) do
+    log(:error, "unknown message #{msg}")
+    {:noreply, state}
+  end
+
+  defp update_current_weather_data(state) do
     tasks =
       Enum.map(state.locations, fn loc ->
         Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
@@ -92,19 +115,41 @@ defmodule EXW.Controller do
         end
       end)
 
-    log(:debug, "current data: #{inspect(current_data)}")
-	#send(:storage, {:update_current, current_data})
-
-    new_state =
-      Map.put(state, :last_update, DateTime.utc_now())
-      |> Map.put(:current_data, current_data)
-
-    send(self(), :sleep)
-    {:noreply, new_state}
+    send(:storage, {:update_current, current_data})
+    Map.put(state, :current_data, current_data)
   end
 
-  def handle_info(msg, state) do
-    log(:error, "unknown message #{msg}")
-    {:noreply, state}
+  defp update_forecast_weather_data(state) do
+    now = DateTime.utc_now()
+
+    # update forecast at midnight
+    case now.hour do
+      0 -> update_forecast_weather_data(state, :forced)
+      _ -> state
+    end
+  end
+
+  defp update_forecast_weather_data(state, :forced) do
+	tasks =
+	  Enum.map(state.locations, fn loc ->
+		Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+		  EXW.OWM.fetch_forecast_weather_data(loc, state.key)
+		end)
+	  end)
+
+	forecast_data =
+	  Enum.reduce(tasks, [], fn task, acc ->
+		case Task.await(task, 5000) do
+		  {:ok, result} ->
+			[result | acc]
+
+		  {:exit, reason} ->
+			log(:error, "Task failed #{inspect(reason)}")
+			acc
+		end
+	  end)
+
+	send(:storage, {:update_forecast, forecast_data})
+	Map.put(state, :forecast_data, forecast_data)
   end
 end
