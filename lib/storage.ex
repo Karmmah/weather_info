@@ -26,18 +26,18 @@ defmodule EXW.Storage do
   @impl true
   def handle_info({:update_current, new_current_data}, state) do
     log(:info, "updating current data with #{inspect(new_current_data)}")
-    log(:debug, "saving old current data")
 
-	if state.current_data != {} do
-		content = state.current_data
-			|> Jason.encode_to_iodata!()
-			# |> <> "\n"
-			# |> File.write!("exw_log.jsonl", :append)
-		log(:debug, "saving content #{inspect(content)}")
-		File.write!("exw_log.jsonl", content)
-	end
+    if state.current_data != {} do
+      log(:debug, "saving old current data")
 
-    log(:debug, "creating new state")
+      content =
+        state.current_data
+        |> Jason.encode_to_iodata!()
+
+      log(:debug, "saving current content #{inspect(content)}")
+      File.write!("exw_log.jsonl", content)
+    end
+
     new_state = Map.put(state, :current_data, new_current_data)
     log(:debug, "finished")
     {:noreply, new_state}
@@ -45,18 +45,18 @@ defmodule EXW.Storage do
 
   def handle_info({:update_forecast, new_forecast_data}, state) do
     log(:info, "updating forecast data with #{inspect(new_forecast_data)}")
-    log(:debug, "saving old forecast data")
 
     if state.forecast_data != [] do
-		content = state.forecast_data
-			|> Jason.encode_to_iodata!()
-			# |> <> "\n"
-			#|> File.write!("exw_log.jsonl", :append)
-		log(:debug, "saving content #{inspect(content)}")
-		File.write!("exw_log.jsonl", content)
-	end
+      log(:debug, "saving old forecast data")
 
-    log(:debug, "creating new state")
+      content =
+        state.forecast_data
+        |> Jason.encode_to_iodata!()
+
+      log(:debug, "saving forecast content #{inspect(content)}")
+      File.write!("exw_log.jsonl", content)
+    end
+
     new_state = Map.put(state, :forecast_data, new_forecast_data)
     log(:debug, "finished")
     {:noreply, new_state}

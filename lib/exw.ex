@@ -25,7 +25,7 @@ defmodule EXW do
   # impl: this function is a callback
   @impl true
   def start(_type, _args) do
-    log(:info, "started")
+    log(:info, "STARTED")
     log(:debug, "Mix env: #{Mix.env()}")
 
     children = [
@@ -34,14 +34,11 @@ defmodule EXW do
       {Task.Supervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
       %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}}
       # {DynamicSupervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
-      # %{id: :counter, start: {EXW.Counter, :start_link, [5]}, restart: :temporary},
       # Supervisor.child_spec({Task, fn -> EXW.OWM.test() end}, restart: :transient)
     ]
 
-    # res = Supervisor.start_link(children, strategy: :one_for_one, restart: :transient)
     res = Supervisor.start_link(children, strategy: :one_for_one)
-    # res = Supervisor.start_link(children, name: EXW.Supervisor, strategy: :one_for_one)
-    log(:info, "finished start")
+    log(:info, "FINISHED START")
     res
     # Process.sleep(:infinity)
   end
@@ -65,7 +62,7 @@ defmodule EXW do
   """
   def get_locations(api_key) do
     # TODO:
-    # - store fetched coordinates
+    # - store fetched coordinates (in config?)
     # - fetch only if coordinates are not already stored
     {:ok, data} = YamlElixir.read_from_file("config.yaml")
 

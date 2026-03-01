@@ -20,15 +20,22 @@ defmodule EXW.Controller do
       key: api_key,
       locations: locations,
       last_update: DateTime.utc_now(),
-      current_data: %{},
+      current_data: [],
       forecast_data: []
     }
 
+    {current_data, forecast_data} = get_weather_data(state)
+    Map.put(state, :current_data, current_data)
+    Map.put(state, :forecast_data, forecast_data)
+
     # log(:debug, "state: #{inspect(state)}")
 
-    send(self(), :update)
+    # send(:storage, {:update_current, current_data})
+    # send(:storage, {:update_forecast, forecast_data})
 
-    log(:debug, "finished init")
+    send(self(), :sleep)
+
+    log(:debug, "FINISHED INIT")
     {:ok, state}
   end
 
@@ -63,12 +70,7 @@ defmodule EXW.Controller do
   end
 
   def handle_info(:update, state) do
-    now = DateTime.utc_now()
-
-    log(
-      :info,
-      "Update started on #{Calendar.strftime(now, "%d.%m.%y")} at #{Calendar.strftime(now, "%H:%M:%S")}"
-    )
+    log(:info, "UPDATE STARTED")
 
     new_state =
       state
@@ -76,17 +78,10 @@ defmodule EXW.Controller do
       |> update_forecast_weather_data()
       |> Map.put(:last_update, DateTime.utc_now())
 
-	# when starting up force the forecast data update
-	new_state =
-		case new_state.forecast_data do
-			[] -> update_forecast_weather_data(new_state, :forced)
-			_ -> new_state
-		end
-
-	log(:debug, "current data: #{inspect(new_state.current_data)}")
-	log(:debug, "forecast data: #{inspect(new_state.forecast_data)}")
-
     send(self(), :sleep)
+    log(:debug, "current data: #{inspect(new_state.current_data)}")
+    log(:debug, "forecast data: #{inspect(new_state.forecast_data)}")
+    log(:info, "UPDATE FINISHED")
     {:noreply, new_state}
   end
 
@@ -96,6 +91,48 @@ defmodule EXW.Controller do
   end
 
   defp update_current_weather_data(state) do
+    current_data = get_current_weather_data(state)
+    send(:storage, {:update_current, current_data})
+    Map.put(state, :current_data, current_data)
+  end
+
+  @doc """
+  	update forecast data once a day at midnight
+  """
+  defp update_forecast_weather_data(state) do
+    now = DateTime.utc_now()
+    case now.hour do
+      0 ->
+        forecast_data = get_forecast_weather_data(state)
+        send(:storage, {:update_forecast, forecast_data})
+        Map.put(state, :forecast_data, forecast_data)
+
+      _ ->
+        state
+    end
+  end
+
+  @doc """
+    get current and forecast data for all locations asynchronously and simultaneously
+  """
+  defp get_weather_data(state) do
+    current_task =
+      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+        EXW.Controller.get_current_weather_data(state)
+      end)
+
+    forecast_task =
+      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+        EXW.Controller.get_forecast_weather_data(state)
+      end)
+
+    {Task.await(current_task, 5000), Task.await(forecast_task, 5000)}
+  end
+
+  @doc """
+    helper function: get current weather data for all locations asynchronously and simultaneously
+  """
+  def get_current_weather_data(state) do
     tasks =
       Enum.map(state.locations, fn loc ->
         Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
@@ -103,53 +140,38 @@ defmodule EXW.Controller do
         end)
       end)
 
-    current_data =
-      Enum.reduce(tasks, [], fn task, acc ->
-        case Task.await(task, 5000) do
-          {:ok, result} ->
-            [result | acc]
+    Enum.reduce(tasks, [], fn task, acc ->
+      case Task.await(task, 5000) do
+        {:ok, result} ->
+          [result | acc]
 
-          {:exit, reason} ->
-            log(:error, "Task failed #{inspect(reason)}")
-            acc
-        end
+        {:exit, reason} ->
+          log(:error, "Task failed #{inspect(reason)}")
+          acc
+      end
+    end)
+  end
+
+  @doc """
+    helper function: get forecast weather data for all locations asynchronously and simultaneously
+  """
+  def get_forecast_weather_data(state) do
+    tasks =
+      Enum.map(state.locations, fn loc ->
+        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+          EXW.OWM.fetch_forecast_weather_data(loc, state.key)
+        end)
       end)
 
-    send(:storage, {:update_current, current_data})
-    Map.put(state, :current_data, current_data)
-  end
+    Enum.reduce(tasks, [], fn task, acc ->
+      case Task.await(task, 5000) do
+        {:ok, result} ->
+          [result | acc]
 
-  defp update_forecast_weather_data(state) do
-    now = DateTime.utc_now()
-
-    # update forecast at midnight
-    case now.hour do
-      0 -> update_forecast_weather_data(state, :forced)
-      _ -> state
-    end
-  end
-
-  defp update_forecast_weather_data(state, :forced) do
-	tasks =
-	  Enum.map(state.locations, fn loc ->
-		Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
-		  EXW.OWM.fetch_forecast_weather_data(loc, state.key)
-		end)
-	  end)
-
-	forecast_data =
-	  Enum.reduce(tasks, [], fn task, acc ->
-		case Task.await(task, 5000) do
-		  {:ok, result} ->
-			[result | acc]
-
-		  {:exit, reason} ->
-			log(:error, "Task failed #{inspect(reason)}")
-			acc
-		end
-	  end)
-
-	send(:storage, {:update_forecast, forecast_data})
-	Map.put(state, :forecast_data, forecast_data)
+        {:exit, reason} ->
+          log(:error, "Task failed #{inspect(reason)}")
+          acc
+      end
+    end)
   end
 end

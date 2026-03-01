@@ -15,7 +15,7 @@ defmodule EXW.OWM do
     log(:info, "calling OWM API to get coordinates for #{city_name}")
     url = "http://api.openweathermap.org/geo/1.0/direct?q=#{city_name}&limit=1&appid=#{api_key}"
     {:ok, data} = Req.get(url)
-    log(:info, "received coordinates with status #{data.status}")
+    log(:info, "received coordinates (status #{data.status})")
     city_info = Enum.at(data.body, 0)
     [city_info["lat"], city_info["lon"]]
   end
@@ -24,7 +24,7 @@ defmodule EXW.OWM do
     url = "https://api.openweathermap.org/data/2.5/weather?lat=#{lat}&lon=#{lon}&appid=#{api_key}"
 
     {:ok, raw_data} = Req.get(url)
-    log(:debug, "received current weather data for #{name} with status #{raw_data.status}")
+    log(:info, "received current weather data for #{name} (status #{raw_data.status})")
     data = raw_data.body
 
     res = %{
@@ -51,7 +51,7 @@ defmodule EXW.OWM do
       "https://api.openweathermap.org/data/2.5/forecast?lat=#{lat}&lon=#{lon}&appid=#{api_key}"
 
     {:ok, raw_data} = Req.get(url)
-    log(:debug, "received forecast weather data for #{name} with status #{raw_data.status}")
+    log(:info, "received forecast weather data for #{name} (status #{raw_data.status})")
     data = raw_data.body
 
     res = %{
