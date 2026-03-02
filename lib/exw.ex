@@ -4,21 +4,6 @@ defmodule EXW do
   this is documentation, trust me
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> EXW.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
-
-  # ----------
-
   use Application
   require Logger
 
@@ -55,25 +40,6 @@ defmodule EXW do
 
   defp log(level, msg) do
     log_msg(level, "[#{__MODULE__}] " <> msg)
-  end
-
-  @doc """
-  	return locations with corresponding coordinates
-  """
-  def get_locations(api_key) do
-    # TODO:
-    # - store fetched coordinates (in config?)
-    # - fetch only if coordinates are not already stored
-    {:ok, data} = YamlElixir.read_from_file("config.yaml")
-
-    data["locations"]
-    |> Enum.reduce(
-      [],
-      fn loc, acc ->
-        [lat, lon] = EXW.OWM.fetch_coordinates(loc, api_key)
-        [%{name: loc, lat: lat, lon: lon} | acc]
-      end
-    )
   end
 
   def read_api_key() do

@@ -14,7 +14,7 @@ defmodule EXW.Controller do
   def init(_init_state) do
     api_key = EXW.read_api_key()
 
-    locations = EXW.get_locations(api_key)
+    locations = EXW.OWM.get_locations(api_key)
 
     state = %{
       key: api_key,
@@ -25,13 +25,17 @@ defmodule EXW.Controller do
     }
 
     {current_data, forecast_data} = get_weather_data(state)
-    Map.put(state, :current_data, current_data)
-    Map.put(state, :forecast_data, forecast_data)
+    state =
+		state
+		|> Map.put(:current_data, current_data)
+    	|> Map.put(:forecast_data, forecast_data)
 
     # log(:debug, "state: #{inspect(state)}")
+	log(:debug, "current data: #{inspect(state.current_data)}")
+	log(:debug, "forecast data: #{inspect(state.forecast_data)}")
 
-    # send(:storage, {:update_current, current_data})
-    # send(:storage, {:update_forecast, forecast_data})
+    send(:storage, {:update_current, current_data})
+    send(:storage, {:update_forecast, forecast_data})
 
     send(self(), :sleep)
 
@@ -72,17 +76,17 @@ defmodule EXW.Controller do
   def handle_info(:update, state) do
     log(:info, "UPDATE STARTED")
 
-    new_state =
+    state =
       state
       |> update_current_weather_data()
       |> update_forecast_weather_data()
       |> Map.put(:last_update, DateTime.utc_now())
 
     send(self(), :sleep)
-    log(:debug, "current data: #{inspect(new_state.current_data)}")
-    log(:debug, "forecast data: #{inspect(new_state.forecast_data)}")
+    log(:debug, "current data: #{inspect(state.current_data)}")
+    log(:debug, "forecast data: #{inspect(state.forecast_data)}")
     log(:info, "UPDATE FINISHED")
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   def handle_info(msg, state) do
@@ -96,9 +100,6 @@ defmodule EXW.Controller do
     Map.put(state, :current_data, current_data)
   end
 
-  @doc """
-  	update forecast data once a day at midnight
-  """
   defp update_forecast_weather_data(state) do
     now = DateTime.utc_now()
     case now.hour do
@@ -112,9 +113,6 @@ defmodule EXW.Controller do
     end
   end
 
-  @doc """
-    get current and forecast data for all locations asynchronously and simultaneously
-  """
   defp get_weather_data(state) do
     current_task =
       Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->

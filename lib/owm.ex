@@ -7,6 +7,26 @@ defmodule EXW.OWM do
     EXW.log_msg(level, "[#{__MODULE__}] " <> msg)
   end
 
+  @doc """
+  	return locations with corresponding coordinates
+  """
+  def get_locations(api_key) do
+    # TODO:
+    # - store fetched coordinates (in config?)
+    # - fetch only if coordinates are not already stored
+    {:ok, data} = YamlElixir.read_from_file("config.yaml")
+
+    data["locations"]
+    |> Enum.reduce(
+      [],
+      fn loc, acc ->
+        [lat, lon] = EXW.OWM.fetch_coordinates(loc, api_key)
+        [%{name: loc, lat: lat, lon: lon} | acc]
+      end
+    )
+  end
+
+
   def fetch_coordinates(city_name, api_key) do
     # TODO:
     # - what happens when city is not found?
@@ -23,6 +43,7 @@ defmodule EXW.OWM do
   def fetch_current_weather_data(%{name: name, lat: lat, lon: lon}, api_key) do
     url = "https://api.openweathermap.org/data/2.5/weather?lat=#{lat}&lon=#{lon}&appid=#{api_key}"
 
+	log(:info, "fetching current weather data for #{name}")
     {:ok, raw_data} = Req.get(url)
     log(:info, "received current weather data for #{name} (status #{raw_data.status})")
     data = raw_data.body
@@ -50,6 +71,7 @@ defmodule EXW.OWM do
     url =
       "https://api.openweathermap.org/data/2.5/forecast?lat=#{lat}&lon=#{lon}&appid=#{api_key}"
 
+	log(:info, "fetching forecast weather data for #{name}")
     {:ok, raw_data} = Req.get(url)
     log(:info, "received forecast weather data for #{name} (status #{raw_data.status})")
     data = raw_data.body

@@ -35,12 +35,13 @@ defmodule EXW.Storage do
         |> Jason.encode_to_iodata!()
 
       log(:debug, "saving current content #{inspect(content)}")
-      File.write!("exw_log.jsonl", content)
+      #File.write!("exw_log.jsonl", content)
+      File.write!("exw_log.jsonl", content <> "\n", [:append])
     end
 
-    new_state = Map.put(state, :current_data, new_current_data)
+    state = Map.put(state, :current_data, new_current_data)
     log(:debug, "finished")
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   def handle_info({:update_forecast, new_forecast_data}, state) do
@@ -54,12 +55,13 @@ defmodule EXW.Storage do
         |> Jason.encode_to_iodata!()
 
       log(:debug, "saving forecast content #{inspect(content)}")
-      File.write!("exw_log.jsonl", content)
+      #File.write!("exw_log.jsonl", content)
+      File.write!("exw_log.jsonl", content <> "\n", [:append])
     end
 
-    new_state = Map.put(state, :forecast_data, new_forecast_data)
+    state = Map.put(state, :forecast_data, new_forecast_data)
     log(:debug, "finished")
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
   # terminate is called when the process is stopped externally

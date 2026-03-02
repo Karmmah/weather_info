@@ -42,3 +42,4 @@ index.html
 *.py.save
 *.swp
 *.png
+/exw_log.jsonl
