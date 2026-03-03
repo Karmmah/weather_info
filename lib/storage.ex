@@ -27,6 +27,7 @@ defmodule EXW.Storage do
   def handle_info({:update_current, new_current_data}, state) do
     log(:info, "updating current data with #{inspect(new_current_data)}")
 
+	log(:debug, "current data: #{inspect(state.current_data)}")
     if state.current_data != {} do
       log(:debug, "saving old current data")
 
@@ -36,7 +37,9 @@ defmodule EXW.Storage do
 
       log(:debug, "saving current content #{inspect(content)}")
       #File.write!("exw_log.jsonl", content)
-      File.write!("exw_log.jsonl", content <> "\n", [:append])
+      #File.write!("exw_log.jsonl", content <> "\n", [:append])
+      File.write!("exw_log.jsonl", "\n", [:append])
+      File.write!("exw_log.jsonl", content, [:append])
     end
 
     state = Map.put(state, :current_data, new_current_data)
@@ -56,12 +59,19 @@ defmodule EXW.Storage do
 
       log(:debug, "saving forecast content #{inspect(content)}")
       #File.write!("exw_log.jsonl", content)
-      File.write!("exw_log.jsonl", content <> "\n", [:append])
+      #File.write!("exw_log.jsonl", content <> "\n", [:append])
+      File.write!("exw_log.jsonl", "\n", [:append])
+      File.write!("exw_log.jsonl", content, [:append])
     end
 
     state = Map.put(state, :forecast_data, new_forecast_data)
     log(:debug, "finished")
     {:noreply, state}
+  end
+
+  def handle_info(other, state) do
+	log(:error, "unknown command given: #{inspect(other)}")
+  	{:noreply, state}
   end
 
   # terminate is called when the process is stopped externally

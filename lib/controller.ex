@@ -25,14 +25,15 @@ defmodule EXW.Controller do
     }
 
     {current_data, forecast_data} = get_weather_data(state)
+	log(:debug, "current data: #{inspect(current_data)}")
+	log(:debug, "forecast data: #{inspect(forecast_data)}")
+
     state =
 		state
 		|> Map.put(:current_data, current_data)
     	|> Map.put(:forecast_data, forecast_data)
 
-    # log(:debug, "state: #{inspect(state)}")
-	log(:debug, "current data: #{inspect(state.current_data)}")
-	log(:debug, "forecast data: #{inspect(state.forecast_data)}")
+    #log(:debug, "state: #{inspect(state)}")
 
     send(:storage, {:update_current, current_data})
     send(:storage, {:update_forecast, forecast_data})
