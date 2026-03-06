@@ -16,6 +16,7 @@ defmodule EXW.Controller do
 
     locations = EXW.OWM.get_locations(api_key)
 
+	# TODO: remove data from state? it's already in storage
     state = %{
       key: api_key,
       locations: locations,

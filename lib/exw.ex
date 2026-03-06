@@ -16,6 +16,7 @@ defmodule EXW do
     children = [
       {Registry, name: EXW, keys: :unique},
       %{id: :storage, start: {EXW.Storage, :start_link, [[name: :storage]]}},
+	  %{id: :display, start: {EXW.Display, :start_link, [[name: :display]]}},
       {Task.Supervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
       %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}}
       # {DynamicSupervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
