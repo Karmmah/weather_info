@@ -2,21 +2,25 @@ defmodule EXW.Controller do
   use GenServer
   require Logger
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, [], opts)
-  end
-
   defp log(level, msg) do
     EXW.log_msg(level, "[#{__MODULE__}] " <> msg)
   end
 
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, [], opts)
+  end
+
   @impl true
   def init(_init_state) do
+    log(:debug, "starting")
+
     api_key = EXW.read_api_key()
+    log(:info, "openweathermap API key read")
+    # TODO: add error handling when internet connection is not up
+    locations = EXW.OWM.get_locations!(api_key)
+    log(:info, "locations: #{inspect(locations)}")
 
-    locations = EXW.OWM.get_locations(api_key)
-
-	# TODO: remove data from state? it's already in storage
+    # TODO: remove weather data from state? it's already in storage
     state = %{
       key: api_key,
       locations: locations,
@@ -26,18 +30,19 @@ defmodule EXW.Controller do
     }
 
     {current_data, forecast_data} = get_weather_data(state)
-	log(:debug, "current data: #{inspect(current_data)}")
-	log(:debug, "forecast data: #{inspect(forecast_data)}")
+    log(:debug, "current data: #{inspect(current_data)}")
+    log(:debug, "forecast data: #{inspect(forecast_data)}")
 
     state =
-		state
-		|> Map.put(:current_data, current_data)
-    	|> Map.put(:forecast_data, forecast_data)
-
-    #log(:debug, "state: #{inspect(state)}")
+      state
+      |> Map.put(:current_data, current_data)
+      |> Map.put(:forecast_data, forecast_data)
 
     send(:storage, {:update_current, current_data})
     send(:storage, {:update_forecast, forecast_data})
+
+    # send(:display, {:display, current_data, forecast_data})
+    send(:display, {:display, "insert current data here, brudda", "and put forecast here, mate"})
 
     send(self(), :sleep)
 
@@ -45,11 +50,27 @@ defmodule EXW.Controller do
     {:ok, state}
   end
 
-  @doc """
-  Sleep until next full hour since last update time
-  """
   @impl true
+  def handle_info(:update, state) do
+    log(:info, "UPDATE STARTED")
+
+    state =
+      state
+      |> update_current_weather_data()
+      |> update_forecast_weather_data()
+      |> Map.put(:last_update, DateTime.utc_now())
+
+    send(:display, {:display, "it's ya boi cwd", "ich bin fwd und ich bin auch dabei"})
+
+    send(self(), :sleep)
+    # log(:debug, "current data: #{inspect(state.current_data)}")
+    # log(:debug, "forecast data: #{inspect(state.forecast_data)}")
+    log(:info, "UPDATE FINISHED")
+    {:noreply, state}
+  end
+
   def handle_info(:sleep, state) do
+    # Sleep until next full hour since last update time
     # TODO: think about how this deals with summer/winter time
     now = DateTime.utc_now()
     # remaining time until next hour in seconds
@@ -61,7 +82,6 @@ defmodule EXW.Controller do
       case rem_time do
         rt when rem_time < 60 ->
           send(self(), :update)
-          log(:debug, "sending update message")
           rt + 1
 
         rt ->
@@ -72,22 +92,6 @@ defmodule EXW.Controller do
     log(:debug, "sleeping for #{sleep_time} seconds")
     Process.sleep(sleep_time * 1000)
     log(:debug, "sleep finished")
-    {:noreply, state}
-  end
-
-  def handle_info(:update, state) do
-    log(:info, "UPDATE STARTED")
-
-    state =
-      state
-      |> update_current_weather_data()
-      |> update_forecast_weather_data()
-      |> Map.put(:last_update, DateTime.utc_now())
-
-    send(self(), :sleep)
-    log(:debug, "current data: #{inspect(state.current_data)}")
-    log(:debug, "forecast data: #{inspect(state.forecast_data)}")
-    log(:info, "UPDATE FINISHED")
     {:noreply, state}
   end
 
@@ -104,6 +108,7 @@ defmodule EXW.Controller do
 
   defp update_forecast_weather_data(state) do
     now = DateTime.utc_now()
+
     case now.hour do
       0 ->
         forecast_data = get_forecast_weather_data(state)

@@ -13,10 +13,10 @@ defmodule EXW.Storage do
 
   @impl true
   def init(_init_state) do
-    log(:info, "starting")
+    log(:debug, "starting")
 
     state = %{
-      current_data: %{},
+      current_data: [],
       forecast_data: []
     }
 
@@ -27,7 +27,8 @@ defmodule EXW.Storage do
   def handle_info({:update_current, new_current_data}, state) do
     log(:info, "updating current data with #{inspect(new_current_data)}")
 
-	log(:debug, "current data: #{inspect(state.current_data)}")
+    log(:debug, "current data: #{inspect(state.current_data)}")
+
     if state.current_data != {} do
       log(:debug, "saving old current data")
 
@@ -36,8 +37,8 @@ defmodule EXW.Storage do
         |> Jason.encode_to_iodata!()
 
       log(:debug, "saving current content #{inspect(content)}")
-      #File.write!("exw_log.jsonl", content)
-      #File.write!("exw_log.jsonl", content <> "\n", [:append])
+      # File.write!("exw_log.jsonl", content)
+      # File.write!("exw_log.jsonl", content <> "\n", [:append])
       File.write!("exw_log.jsonl", content, [:append])
       File.write!("exw_log.jsonl", "\n", [:append])
     end
@@ -58,8 +59,8 @@ defmodule EXW.Storage do
         |> Jason.encode_to_iodata!()
 
       log(:debug, "saving forecast content #{inspect(content)}")
-      #File.write!("exw_log.jsonl", content)
-      #File.write!("exw_log.jsonl", content <> "\n", [:append])
+      # File.write!("exw_log.jsonl", content)
+      # File.write!("exw_log.jsonl", content <> "\n", [:append])
       File.write!("exw_log.jsonl", "\n", [:append])
       File.write!("exw_log.jsonl", content, [:append])
     end
@@ -70,8 +71,8 @@ defmodule EXW.Storage do
   end
 
   def handle_info(other, state) do
-	log(:error, "unknown command given: #{inspect(other)}")
-  	{:noreply, state}
+    log(:error, "unknown command given: #{inspect(other)}")
+    {:noreply, state}
   end
 
   # terminate is called when the process is stopped externally
