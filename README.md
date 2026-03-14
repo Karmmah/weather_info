@@ -19,3 +19,13 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/weather_info>.
 
+## Custom setup steps
+
+- create bootable alpine sd card
+- add headless file from alpine wiki in root of sd card
+- add wpa_supplicant.conf in root of sd card
+- boot pi and log into root (has no password)
+- run setup-alpine (also set up the wifi connection again even though already connected)
+- log into pi as the user (login as root does not work anymore)
+- enable community repos in /etc/apk/repositories
+- install elixir
