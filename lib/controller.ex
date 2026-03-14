@@ -40,9 +40,7 @@ defmodule EXW.Controller do
 
     send(:storage, {:update_current, current_data})
     send(:storage, {:update_forecast, forecast_data})
-
-    # send(:display, {:display, current_data, forecast_data})
-    send(:display, {:display, "insert current data here, brudda", "and put forecast here, mate"})
+    send(:display, {:display, current_data, forecast_data})
 
     send(self(), :sleep)
 

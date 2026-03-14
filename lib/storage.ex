@@ -29,18 +29,16 @@ defmodule EXW.Storage do
 
     log(:debug, "current data: #{inspect(state.current_data)}")
 
-    if state.current_data != {} do
-      log(:debug, "saving old current data")
-
+    if state.current_data != [] do
       content =
         state.current_data
-        |> Jason.encode_to_iodata!()
+        #|> Jason.encode_to_iodata!()
+        |> Jason.encode!()
 
       log(:debug, "saving current content #{inspect(content)}")
-      # File.write!("exw_log.jsonl", content)
-      # File.write!("exw_log.jsonl", content <> "\n", [:append])
-      File.write!("exw_log.jsonl", content, [:append])
-      File.write!("exw_log.jsonl", "\n", [:append])
+      File.write!("exw_log.jsonl", content <> "\n", [:append])
+      #File.write!("exw_log.jsonl", content, [:append])
+      #File.write!("exw_log.jsonl", "\n", [:append])
     end
 
     state = Map.put(state, :current_data, new_current_data)
@@ -52,17 +50,15 @@ defmodule EXW.Storage do
     log(:info, "updating forecast data with #{inspect(new_forecast_data)}")
 
     if state.forecast_data != [] do
-      log(:debug, "saving old forecast data")
-
       content =
         state.forecast_data
-        |> Jason.encode_to_iodata!()
+        # |> Jason.encode_to_iodata!()
+        |> Jason.encode!()
 
       log(:debug, "saving forecast content #{inspect(content)}")
-      # File.write!("exw_log.jsonl", content)
-      # File.write!("exw_log.jsonl", content <> "\n", [:append])
-      File.write!("exw_log.jsonl", "\n", [:append])
-      File.write!("exw_log.jsonl", content, [:append])
+      File.write!("exw_log.jsonl", content <> "\n", [:append])
+      #File.write!("exw_log.jsonl", "\n", [:append])
+      #File.write!("exw_log.jsonl", content, [:append])
     end
 
     state = Map.put(state, :forecast_data, new_forecast_data)

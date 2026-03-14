@@ -55,17 +55,17 @@ defmodule EXW.OWM do
         res = %{
           location: name,
           timestamp: data["dt"],
-          condition: Enum.at(data["weather"], 0)["main"],
-          condition_descr: Enum.at(data["weather"], 0)["description"],
+          cond: Enum.at(data["weather"], 0)["main"],
+          cond_descr: Enum.at(data["weather"], 0)["description"],
           temp: data["main"]["temp"],
-          humidity: data["main"]["humidity"],
+          hum: data["main"]["humidity"],
           cloud_cov: data["clouds"]["all"],
           rain: data["rain"]["1h"],
           pressure: data["main"]["pressure"],
           wind_dir: data["wind"]["deg"],
           wind_spd: data["wind"]["speed"],
           # wind_gust: data["wind"]["gust"],
-          visibility: data["visibility"]
+          vis: data["visibility"]
         }
 
         {:ok, res}
