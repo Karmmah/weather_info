@@ -43,3 +43,4 @@ index.html
 *.swp
 *.png
 /exw_log.jsonl
+venv/

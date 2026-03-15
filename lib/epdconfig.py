@@ -156,11 +156,12 @@ class JetsonNano:
         self.GPIO.cleanup()
 
 
-if os.path.exists('/sys/bus/platform/drivers/gpiomem-bcm2835'):
-    implementation = RaspberryPi()
-else:
-    #implementation = JetsonNano()
-    raise RuntimeError("ERROR: not running on a raspi")
+#if os.path.exists('/sys/bus/platform/drivers/gpiomem-bcm2835'):
+#    implementation = RaspberryPi()
+#else:
+#    implementation = JetsonNano()
+#    #raise RuntimeError("ERROR: not running on a raspi")
+implementation = RaspberryPi()
 
 for func in [x for x in dir(implementation) if not x.startswith('_')]:
     setattr(sys.modules[__name__], func, getattr(implementation, func))

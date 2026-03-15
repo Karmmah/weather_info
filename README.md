@@ -28,4 +28,9 @@ be found at <https://hexdocs.pm/weather_info>.
 - run setup-alpine (also set up the wifi connection again even though already connected)
 - log into pi as the user (login as root does not work anymore)
 - enable community repos in /etc/apk/repositories
-- install elixir
+- move owm_token.txt into project directory
+- install elixir and dependencies with "mix deps.get"
+
+- 
+- set up venv (python3 -m venv venv; . venv/bin/activate)
+- install python modules (pip install: spidev, pillow, gpiod, RPi.GPIO, numpy)

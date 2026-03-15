@@ -45,6 +45,8 @@ defmodule EXW do
   end
 
   def read_api_key() do
+	# TODO:
+	# - check if file is available and throw error if not
     {:ok, key} = File.read("owm_token.txt")
     String.trim(key)
   end

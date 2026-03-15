@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 
-import os, json, sys
+import os, json, sys, time, math
 from PIL import Image,ImageDraw,ImageFont
 
 import epd2in13_V2
 
+epd_width, epd_height, = 250, 122
+
 #fontdir = '/home/pi/weather_info/lib'
 #fontdir = '/lib'
-fontdir = '/home/pk/code/weather_info/lib'
+#fontdir = '/home/pk/code/weather_info/lib'
+fontdir = os.getcwd()+"/lib"
 small_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),9)
 text_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),20)
 large_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),42)
 
 
-def get_image(data):
-    epd_width = data["width"]
-    epd_height = data["height"]
-    location = data["location"]
-    current = data["current"]
-    forecast = data["forecast"]
+#def get_image(data):
+def get_image(epd_width, epd_height, location, current, forecast):
+    #epd_width = data["width"]
+    #epd_height = data["height"]
+    #location = data["location"]
+    #current = data["current"]
+    #forecast = data["forecast"]
 
     image = Image.new('1',(epd_height,epd_width),255)
     draw = ImageDraw.Draw(image)
@@ -26,10 +30,14 @@ def get_image(data):
     # add town and time info 
     #time_str = time.strftime('%H:%M:%S')
     time_str = time.strftime('%H:%M')
-    w,h = draw.textsize(time_str, font=text_font)
+    #w,h = draw.textsize(time_str, font=text_font)
+    (left, top, right, bottom) = draw.textbbox((0,0), time_str, font=text_font)
+    w, h = right - left, top - bottom
     draw.text((epd_height-w, epd_width-30), text=time_str, font=text_font)
-    w,h = draw.textsize(town)
-    draw.text((epd_height-w, epd_width-37), text=town)
+    #w,h = draw.textsize(location)
+    (left, top, right, bottom) = draw.textbbox((0,0), location)
+    w, h = right - left, top - bottom
+    draw.text((epd_height-w, epd_width-37), text=location)
 
     # add connection info
     try:
@@ -41,8 +49,11 @@ def get_image(data):
 
     # big condition info
     temp = current["temp"]
-    w,h = draw.textsize(temp,font=large_font)
-    draw.text((238-w,-1), text=temp, font=large_font, outline=0)
+    temp_str = str(temp)
+    #w,h = draw.textsize(temp,font=large_font)
+    (left, top, right, bottom) = draw.textbbox((0,0), temp_str, font=large_font)
+    w, h = right - left, top - bottom
+    draw.text((238-w,-1), text=temp_str, font=large_font, outline=0)
     draw.text((238,7), text='*C')
     draw.text((183,-3), text=current["cond"], font=small_font) #condition
 
@@ -53,19 +64,22 @@ def get_image(data):
     draw_windgauge(draw, center, radius, wind_speed, angle)
 
     # graphical forecast
-    draw_graphical_forecast(epd_width, epd_height, draw, forecast)
+    #draw_graphical_forecast(epd_width, epd_height, draw, forecast)
 
     return image
 
 
-def draw_windgauge(draw, center, radius, wind_speed, angle):
-    w, h = draw.textsize(wind_speed,font=text_font)
+def draw_windgauge(draw, center, radius, wind_spd, angle):
+    wind_spd_str = str(wind_spd)
+    #w, h = draw.textsize(wind_speed,font=text_font)
+    (left, top, right, bottom) = draw.textbbox((0,0), wind_spd_str, font=text_font)
+    w, h = right - left, top - bottom
     draw.ellipse((center[0]-radius,center[1]-radius,center[0]+radius,center[1]+radius),width=2)
     draw.line([center,(center[0]+radius*math.cos(angle),center[1]-radius*math.sin(angle))], width=3)
     draw.line([center,(center[0]+radius*math.cos(angle-0.8*math.pi),center[1]-radius*math.sin(angle-0.8*math.pi))], width=3)
     draw.line([center,(center[0]+radius*math.cos(angle+0.8*math.pi),center[1]-radius*math.sin(angle+0.8*math.pi))], width=3)
     draw.ellipse((center[0]-radius/2,center[1]-radius/2,center[0]+radius/2,center[1]+radius/2),fill=0)
-    draw.text((center[0]-w/2+1,center[1]-h*0.6),text=wind_speed,font=text_font,fill=1,align='center')
+    draw.text((center[0]-w/2+1,center[1]-h*0.6),text=wind_spd_str,font=text_font,fill=1,align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
@@ -83,7 +97,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 
     start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10]
     #xborder_right = 108
-    forecast_width = 141
+    forecast_width = 141 #[px]
 
     #how many lines to draw; subtract two first entries which are just time and date
     data_lines_count = 6 #len(forecast[0])-2
@@ -129,7 +143,9 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 
     # labels
     label_font = text_font
-    w,h = draw.textsize('W', font=label_font)
+    #w,h = draw.textsize('W', font=label_font)
+    (left, top, right, bottom) = draw.textbbox((0,0), 'W', font=label_font)
+    w, h = right - left, top - bottom
     draw.text((forecast_width+3, epd_width-height*5.5-h/2-1), text='T', font=label_font)
     draw.text((forecast_width+3, epd_width-height*4.5-h/2-1), text='W', font=label_font)
     draw.text((forecast_width+3, epd_width-height*3.5-h/2-1), text='C', font=label_font)
@@ -137,7 +153,9 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     draw.text((forecast_width+3, epd_width-height*1.5-h/2-1), text='P', font=label_font)
     draw.text((forecast_width+3, epd_width-height*0.5-h/2-1), text='H', font=label_font)
 
-    w,h = draw.textsize(end_label)
+    #w,h = draw.textsize(end_label)
+    (left, top, right, bottom) = draw.textbbox((0,0), end_label)
+    w, h = right - left, top - bottom
     draw.text((0, epd_width-height*data_lines_count-h), text=start_label)
     draw.text((forecast_width-w, epd_width-height*data_lines_count-h), text=end_label)
 
@@ -155,23 +173,29 @@ def main():
         if not line: continue
         if line == "terminate":
             break
+        current_data, forecast_data = [], []
         try:
             data = json.loads(line)
             assert data["command"] == "display"
             current_data = data["current"]
             forecast_data = data["forecast"]
+            print(f"received data: {data}") #debug
         except:
             print("received invalid json data: {line}", flush=True)
             continue
 
         epd.init(epd.FULL_UPDATE)
-        image = get_image({
-            "width": epd.width,
-            "height": epd.height,
-            "location": data["location"],
-            "current": data["current"],
-            "forecast": data["forecast"]
-        })
+        #image = get_image({
+        #    "width": epd.width,
+        #    "height": epd.height,
+        #    "location": current_data[0]["location"],
+        #    "current": current,
+        #    "forecast": forecast
+        #})
+        image = get_image(
+            epd_width, epd_height,
+            current_data[0]["location"], current_data[0], forecast_data[0]["forecast"]
+        )
         epd.display(epd.getbuffer(image))
         epd.sleep() #set epaper display to sleep mode
 

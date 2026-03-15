@@ -58,7 +58,10 @@ defmodule EXW.Controller do
       |> update_forecast_weather_data()
       |> Map.put(:last_update, DateTime.utc_now())
 
-    send(:display, {:display, "it's ya boi cwd", "ich bin fwd und ich bin auch dabei"})
+    #send(:display, {:display, "it's ya boi cwd", "ich bin fwd und ich bin auch dabei"})
+    send(:storage, {:update_current, state.current_data})
+    send(:storage, {:update_forecast, state.forecast_data})
+    send(:display, {:display, state.current_data, state.forecast_data})
 
     send(self(), :sleep)
     # log(:debug, "current data: #{inspect(state.current_data)}")
