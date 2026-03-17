@@ -57,6 +57,7 @@ defmodule EXW.OWM do
           timestamp: data["dt"],
           cond: Enum.at(data["weather"], 0)["main"],
           cond_descr: Enum.at(data["weather"], 0)["description"],
+          # temp: Float.round(data["main"]["temp"] - 273.15, 1),
           temp: data["main"]["temp"],
           hum: data["main"]["humidity"],
           cloud_cov: data["clouds"]["all"],
@@ -93,7 +94,7 @@ defmodule EXW.OWM do
             Enum.map(data["list"], fn dp ->
               %{
                 timestamp: dp["dt"],
-                temp: dp["main"]["temp"],
+                temp: Float.round(dp["main"]["temp"] - 273.15, 1),
                 humidity: dp["main"]["humidity"],
                 cloud_cov: dp["clouds"]["all"],
                 rain_prob: dp["pop"],

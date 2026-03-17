@@ -32,13 +32,13 @@ defmodule EXW.Storage do
     if state.current_data != [] do
       content =
         state.current_data
-        #|> Jason.encode_to_iodata!()
+        # |> Jason.encode_to_iodata!()
         |> Jason.encode!()
 
       log(:debug, "saving current content #{inspect(content)}")
       File.write!("exw_log.jsonl", content <> "\n", [:append])
-      #File.write!("exw_log.jsonl", content, [:append])
-      #File.write!("exw_log.jsonl", "\n", [:append])
+      # File.write!("exw_log.jsonl", content, [:append])
+      # File.write!("exw_log.jsonl", "\n", [:append])
     end
 
     state = Map.put(state, :current_data, new_current_data)
@@ -57,8 +57,8 @@ defmodule EXW.Storage do
 
       log(:debug, "saving forecast content #{inspect(content)}")
       File.write!("exw_log.jsonl", content <> "\n", [:append])
-      #File.write!("exw_log.jsonl", "\n", [:append])
-      #File.write!("exw_log.jsonl", content, [:append])
+      # File.write!("exw_log.jsonl", "\n", [:append])
+      # File.write!("exw_log.jsonl", content, [:append])
     end
 
     state = Map.put(state, :forecast_data, new_forecast_data)
