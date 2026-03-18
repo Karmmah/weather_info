@@ -41,7 +41,7 @@ def get_image(epd_width, epd_height, location, current, forecast):
     except:
         ip = "No connection"
     draw.text((epd_width-84, epd_height-10), text=ip)
-    print(f"connection info: {ip}") #debug
+    print(f"connection info: {ip}", flush=True) #debug
 
     # big condition info
     temp = round(current["temp"] - 273.15) #[°C]
@@ -76,36 +76,30 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
     draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
     draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
     #draw.text((center[0]-w/2+1,center[1]-h*0.6), text=wind_spd_str, font=text_font, fill=1, align='center')
-    draw.text((center[0]-w/2+1,center[1]+h*0.6), text=wind_spd_str, font=text_font, fill=1, align='center')
+    draw.text((center[0]-w/2+1, center[1]+h*1.0), text=wind_spd_str, font=text_font, fill=1, align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 
-    #min_max = [[99.9,-99.9],[999.9,-1.0],[101.0,-1.0],[101.0,-1.0],[9999.9,-1.0],[101,-1]]
     # unreasonable default values that get overwritten
     ranges = {
-        "temp": [-99.9, 99.9],
-        "wind_spd": [-1.0, 999.9],
-        "cloud_cov": [-1.0, 101.0],
-        "rain_prob": [-1.0, 101.0],
-        "pressure": [-1.0, 9999.9],
-        "humidity": [-1.0, 101.0]
+        "temp": [99.9, -99.9],
+        "wind_spd": [999.9, -1.0],
+        "cloud_cov": [101.0, -1.0],
+        "rain_prob": [101.0, -1.0],
+        "pressure": [9999.9, -1.0],
+        "humidity": [101.0, -1.0]
     }
 
-    #for i in range(2,len(forecast[0])):
-    #    for j in range(len(forecast)):
-    #        if forecast[j][i] < min_max[i-2][0]:
-    #            min_max[i-2][0] = forecast[j][i]
-    #        if forecast[j][i] > min_max[i-2][1]:
-    #            min_max[i-2][1] = forecast[j][i]
     for p in forecast:
         for k in ranges.keys():
             if p[k] < ranges[k][0]:
                 ranges[k][0] = p[k]
             if p[k] > ranges[k][1]:
-                ranges[k][0] = p[k]
+                ranges[k][1] = p[k]
 
-    #min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100] #always show certain values in range from 0-100; windspeed, clouds, rain, humidity
+    # always show certain values in range from 0-100; windspeed, clouds, rain, humidity
+    #min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100]
     ranges["wind_spd"][0] = 0
     ranges["cloud_cov"][0], ranges["cloud_cov"][1] = 0, 100
     ranges["rain_prob"][0], ranges["rain_prob"][1] = 0, 100
@@ -132,6 +126,7 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 
     #draw data lines
     curr_line = 0
+    label_font = text_font
     #for i in range(data_lines_count):
     for k in ranges.keys():
 
@@ -140,9 +135,8 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
             draw.line([(0, epd_height-height*curr_line-1), (22, epd_height-height*curr_line-1)])
             draw.line([(forecast_width-37, epd_height-height*curr_line-1), (forecast_width, epd_height-height*curr_line-1)])
 
-        y0 = epd_height-height * (data_lines_count) + (curr_line+1) * height
+        y0 = epd_height + (curr_line + 1 - data_lines_count) * height
         #value = (float(forecast[0][i+2])-min_max[i][0]) / (min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
-        #value = (float(forecast[
         #y_left = y0 - height * value
 
         # draw entries
@@ -157,23 +151,19 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         # draw graph
         draw.polygon(polygon_points, fill=0)
 
-#        # draw lables for min and max values of each line
-#        if i in [0,1,4]: #draw only selected min/max values
-#            draw.text((forecast_width+20,y0-height*0.5),text=str(min_max[i][0]))
-#            draw.text((forecast_width+20,y0-height*1.0+1),text=str(min_max[i][1]))
+        # draw lables for min and max values of each line
+        #if i in [0,1,4]: #draw only selected min/max values
+        #    draw.text((forecast_width+20,y0-height*0.5),text=str(min_max[i][0]))
+        #    draw.text((forecast_width+20,y0-height*1.0+1),text=str(min_max[i][1]))
+        draw.text((forecast_width+20, y0-height*0.5), text=str(ranges[k][0]))
+        draw.text((forecast_width+20, y0-height*1.0+1), text=str(ranges[k][1]))
 
-    # labels
-    label_font = text_font
-    #w,h = draw.textsize('W', font=label_font)
-    (left, top, right, bottom) = draw.textbbox((0,0), 'W', font=label_font)
-    w, h = right - left, top - bottom
-    draw.text((forecast_width+3, epd_height-height*5.5-h/2-1), text='T', font=label_font)
-    draw.text((forecast_width+3, epd_height-height*4.5-h/2-1), text='W', font=label_font)
-    draw.text((forecast_width+3, epd_height-height*3.5-h/2-1), text='C', font=label_font)
-    draw.text((forecast_width+3, epd_height-height*2.5-h/2-1), text='R', font=label_font)
-    draw.text((forecast_width+3, epd_height-height*1.5-h/2-1), text='P', font=label_font)
-    draw.text((forecast_width+3, epd_height-height*0.5-h/2-1), text='H', font=label_font)
+        #draw.text((forecast_width+3, epd_height-height*(1.5+curr_line)+6), text=k[0].upper(), font=label_font)
+        draw.text((forecast_width+3, y0-21), text=k[0].upper(), font=label_font)
 
+        curr_line += 1
+
+    # time labels
     ##w,h = draw.textsize(end_label)
     #(left, top, right, bottom) = draw.textbbox((0,0), end_label)
     #w, h = right - left, top - bottom
@@ -200,9 +190,9 @@ def main():
             assert data["command"] == "display"
             current_data = data["current"]
             forecast_data = data["forecast"]
-            print(f"received data: {data}") #debug
+            print(f"RECIEVED: command: {data["command"]}, current, forecast", flush=True)
         except:
-            print("received invalid json data: {line}", flush=True)
+            print("ERROR: received invalid json data: {line}", flush=True)
             continue
 
         epd.init(epd.FULL_UPDATE)
