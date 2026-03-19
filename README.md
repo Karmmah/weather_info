@@ -19,6 +19,10 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/weather_info>.
 
+## Settings
+
+- add Town that you want to display weather to at the top of the locations in the config
+
 ## Custom setup steps
 
 - create bootable alpine sd card

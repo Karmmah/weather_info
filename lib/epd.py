@@ -37,10 +37,10 @@ def get_image(epd_width, epd_height, location, current, forecast):
         ip = subprocess.check_output(
             "ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d'/' -f1",
             shell=True, text=True
-        )
+        ).strip()
     except:
         ip = "No connection"
-    draw.text((epd_width-84, epd_height-10), text=ip)
+    draw.text((epd_width, epd_height-9), text=ip, anchor="rt")
     print(f"connection info: {ip}", flush=True) #debug
 
     # big condition info
@@ -51,11 +51,12 @@ def get_image(epd_width, epd_height, location, current, forecast):
     w, h = right - left, top - bottom
     draw.text((237-w,2), text=temp_str, font=large_font, outline=0)
     draw.text((236,9), text='*C')
-    draw.text((183,0), text=current["cond"], font=small_font) #condition
+    #draw.text((183,0), text=current["cond"], font=small_font) #condition
+    draw.text((epd_width,0), text=current["cond"], font=small_font, anchor='rt')
 
     # wind gauge
     radius = 20 #pixels
-    center = (epd_width-radius-1, 64)
+    center = (epd_width-radius-1, 65)
     angle, wind_speed = current["wind_dir"], round(current["wind_spd"])
     draw_windgauge(draw, center, radius, wind_speed, angle)
 
@@ -76,7 +77,7 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
     draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
     draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
     #draw.text((center[0]-w/2+1,center[1]-h*0.6), text=wind_spd_str, font=text_font, fill=1, align='center')
-    draw.text((center[0]-w/2+1, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
+    draw.text((center[0]-w/2+0, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
@@ -106,28 +107,24 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     ranges["humidity"][0], ranges["humidity"][1] = 0, 100
 
     #start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10] # time label
-    #xborder_right = 108
-    forecast_width = 141 #[px]
+    forecast_x0 = 17
+    forecast_width = 153 #[px]
 
-    #how many lines to draw; subtract two first entries which are just time and date
-    data_lines_count = 6 #len(forecast[0])-2
+    # how many lines to draw; subtract two first entries which are just time and date
+    data_lines_count = len(ranges)
 
-    #width, height = (epd_height-xborder_right)/len(forecast), (epd_width-9)/data_lines_count
     width, height = forecast_width/len(forecast), (epd_height-9)/data_lines_count
 
-    #draw border
-    #draw.rectangle([(1, epd_height-height*data_lines_count), (forecast_width, epd_height)])
-    draw.rectangle([(17, epd_height-height*data_lines_count), (17 + forecast_width, epd_height)])
+    # draw border
+    draw.rectangle([(forecast_x0, epd_height-height*data_lines_count), (forecast_x0 + forecast_width, epd_height)])
 
     ## draw vertical separators of the days
     #for j in range(0, len(forecast)):
     #    if forecast[j][0][11:13] == "00":
     #        draw.line([(j*width, epd_height), (j*width, epd_height-height*data_lines_count)], width=1)
 
-    #draw data lines
+    # draw data lines
     curr_line = 0
-    label_font = text_font
-    #for i in range(data_lines_count):
     for k in ranges.keys():
 
         ## horizontal line separating entries
@@ -137,11 +134,10 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
 
         # draw entries
         y0 = epd_height + (curr_line + 1 - data_lines_count) * height
-        polygon_points = [17+len(forecast)*width, y0, 17, y0] #add lower corners first
+        polygon_points = [forecast_x0+len(forecast)*width, y0, forecast_x0, y0] #add lower corners first
         for j in range(0,len(forecast)):
             value = (float(forecast[j][k])-ranges[k][0])/(ranges[k][1]-ranges[k][0]+.001) #+0.001 to not divide by zero
-            #x = j*width
-            x = 17 + j*width
+            x = forecast_x0 + j*width
             y = y0-height*value
             polygon_points += [x,y]
 
@@ -149,12 +145,11 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         draw.polygon(polygon_points, fill=0)
 
         # draw label for what data is displayed in each line
-        #draw.text((forecast_width+3, y0-21), text=k[0].upper(), font=label_font)
-        draw.text((0, y0-21), text=k[0].upper(), font=label_font)
+        draw.text((0, y0-22), text=k[0].upper(), font=text_font)
 
         # draw lables for min and max values of each line
-        draw.text((forecast_width+20, y0-height*0.5), text=str(ranges[k][0]))
-        draw.text((forecast_width+20, y0-height*1.0+1), text=str(ranges[k][1]))
+        draw.text((forecast_width+20, y0-height*0.6), text=str(ranges[k][0]))
+        draw.text((forecast_width+20, y0-height*1.1), text=str(ranges[k][1]))
 
         curr_line += 1
 
@@ -185,7 +180,7 @@ def main():
             assert data["command"] == "display"
             current_data = data["current"]
             forecast_data = data["forecast"]
-            print(f"RECIEVED: command: {data["command"]}, current, forecast", flush=True)
+            print(f"RECIEVED: command: {data["command"]}, current: keys:{current_data[0].keys()}, forecast: len:{len(forecast_data[0]['forecast'])} keys:{forecast_data[0]['forecast'][0].keys()}", flush=True)
         except:
             print("ERROR: received invalid json data: {line}", flush=True)
             continue

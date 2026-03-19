@@ -12,6 +12,8 @@ defmodule EXW.Controller do
 
   @impl true
   def init(_init_state) do
+  	Logger.configure(level: :info)
+
     log(:debug, "starting")
 
     api_key = EXW.read_api_key()
@@ -89,7 +91,7 @@ defmodule EXW.Controller do
           rt - 59
       end
 
-    log(:debug, "sleeping for #{sleep_time} seconds")
+    log(:info, "sleeping for #{sleep_time} seconds")
     Process.sleep(sleep_time * 1000)
     log(:debug, "sleep finished")
     {:noreply, state}
