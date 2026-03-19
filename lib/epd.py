@@ -76,7 +76,7 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
     draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
     draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
     #draw.text((center[0]-w/2+1,center[1]-h*0.6), text=wind_spd_str, font=text_font, fill=1, align='center')
-    draw.text((center[0]-w/2+1, center[1]+h*1.0), text=wind_spd_str, font=text_font, fill=1, align='center')
+    draw.text((center[0]-w/2+1, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
@@ -116,10 +116,10 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     width, height = forecast_width/len(forecast), (epd_height-9)/data_lines_count
 
     #draw border
-    #draw.rectangle([(1,epd_height), (forecast_width, epd_height-height*data_lines_count)])
-    draw.rectangle([(1, epd_height-height*data_lines_count), (forecast_width, epd_height)])
+    #draw.rectangle([(1, epd_height-height*data_lines_count), (forecast_width, epd_height)])
+    draw.rectangle([(17, epd_height-height*data_lines_count), (17 + forecast_width, epd_height)])
 
-    ## draw vertical separators
+    ## draw vertical separators of the days
     #for j in range(0, len(forecast)):
     #    if forecast[j][0][11:13] == "00":
     #        draw.line([(j*width, epd_height), (j*width, epd_height-height*data_lines_count)], width=1)
@@ -130,36 +130,31 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     #for i in range(data_lines_count):
     for k in ranges.keys():
 
-        # horizontal line
-        if curr_line != 0:
-            draw.line([(0, epd_height-height*curr_line-1), (22, epd_height-height*curr_line-1)])
-            draw.line([(forecast_width-37, epd_height-height*curr_line-1), (forecast_width, epd_height-height*curr_line-1)])
-
-        y0 = epd_height + (curr_line + 1 - data_lines_count) * height
-        #value = (float(forecast[0][i+2])-min_max[i][0]) / (min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
-        #y_left = y0 - height * value
+        ## horizontal line separating entries
+        #if curr_line != 0:
+        #    draw.line([(0, epd_height-height*curr_line-1), (22, epd_height-height*curr_line-1)])
+        #    draw.line([(forecast_width-37, epd_height-height*curr_line-1), (forecast_width, epd_height-height*curr_line-1)])
 
         # draw entries
-        polygon_points = [len(forecast)*width, y0, 0, y0] #add lower corners first
+        y0 = epd_height + (curr_line + 1 - data_lines_count) * height
+        polygon_points = [17+len(forecast)*width, y0, 17, y0] #add lower corners first
         for j in range(0,len(forecast)):
-            #value = (float(forecast[j][i+2])-min_max[i][0])/(min_max[i][1]-min_max[i][0]+0.001) #+0.001 to not divide by zero
             value = (float(forecast[j][k])-ranges[k][0])/(ranges[k][1]-ranges[k][0]+.001) #+0.001 to not divide by zero
-            x = j*width
+            #x = j*width
+            x = 17 + j*width
             y = y0-height*value
             polygon_points += [x,y]
 
         # draw graph
         draw.polygon(polygon_points, fill=0)
 
+        # draw label for what data is displayed in each line
+        #draw.text((forecast_width+3, y0-21), text=k[0].upper(), font=label_font)
+        draw.text((0, y0-21), text=k[0].upper(), font=label_font)
+
         # draw lables for min and max values of each line
-        #if i in [0,1,4]: #draw only selected min/max values
-        #    draw.text((forecast_width+20,y0-height*0.5),text=str(min_max[i][0]))
-        #    draw.text((forecast_width+20,y0-height*1.0+1),text=str(min_max[i][1]))
         draw.text((forecast_width+20, y0-height*0.5), text=str(ranges[k][0]))
         draw.text((forecast_width+20, y0-height*1.0+1), text=str(ranges[k][1]))
-
-        #draw.text((forecast_width+3, epd_height-height*(1.5+curr_line)+6), text=k[0].upper(), font=label_font)
-        draw.text((forecast_width+3, y0-21), text=k[0].upper(), font=label_font)
 
         curr_line += 1
 
