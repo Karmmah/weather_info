@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, json, sys, time, math, subprocess
+import os, json, sys, time, math, subprocess, datetime
 from PIL import Image,ImageDraw,ImageFont
 
 import epd2in13_V2
@@ -81,6 +81,9 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
+    #start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10] # time label
+    forecast_x0 = 17
+    forecast_width = 153 #[px]
 
     # unreasonable default values that get overwritten
     ranges = {
@@ -92,7 +95,23 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         "humidity": [101.0, -1.0]
     }
 
-    for p in forecast:
+    # how many lines to draw; subtract two first entries which are just time and date
+    data_lines_count = len(ranges)
+    width, height = forecast_width/len(forecast), (epd_height-9)/data_lines_count
+
+    # draw border
+    draw.rectangle([(forecast_x0, epd_height-height*data_lines_count), (forecast_x0 + forecast_width, epd_height)])
+
+    prev_hour = 0
+    for i,p in enumerate(forecast):
+        # draw vertical day separator lines
+        print(f"timestamp hour: {datetime.datetime.fromtimestamp(p["timestamp"]).hour}", flush=True)#debug
+        curr_hour = datetime.datetime.fromtimestamp(p["timestamp"]).hour
+        if curr_hour - prev_hour < 0: # mark beginning of new day
+            print(f"midnight at point {p}", flush=True)#debug
+            draw.line([(forecast_x0+i*width, epd_height), (forecast_x0+i*width, epd_height-height*data_lines_count)], width=1)
+        prev_hour = curr_hour
+        # get min/max values
         for k in ranges.keys():
             if p[k] < ranges[k][0]:
                 ranges[k][0] = p[k]
@@ -105,18 +124,6 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     ranges["cloud_cov"][0], ranges["cloud_cov"][1] = 0, 100
     ranges["rain_prob"][0], ranges["rain_prob"][1] = 0, 100
     ranges["humidity"][0], ranges["humidity"][1] = 0, 100
-
-    #start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10] # time label
-    forecast_x0 = 17
-    forecast_width = 153 #[px]
-
-    # how many lines to draw; subtract two first entries which are just time and date
-    data_lines_count = len(ranges)
-
-    width, height = forecast_width/len(forecast), (epd_height-9)/data_lines_count
-
-    # draw border
-    draw.rectangle([(forecast_x0, epd_height-height*data_lines_count), (forecast_x0 + forecast_width, epd_height)])
 
     ## draw vertical separators of the days
     #for j in range(0, len(forecast)):
@@ -145,7 +152,10 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         draw.polygon(polygon_points, fill=0)
 
         # draw label for what data is displayed in each line
-        draw.text((0, y0-22), text=k[0].upper(), font=text_font)
+        #draw.text((0, y0-22), text=k[0].upper(), font=text_font)
+        #draw.text((forecast_x0-1, y0-16), text=k[0].upper(), font=text_font, anchor="rt")
+        #draw.text((1, y0-16), text=k[0].upper(), font=text_font, anchor="lt")
+        draw.text((9, y0-16), text=k[0].upper(), font=text_font, anchor="mt")
 
         # draw lables for min and max values of each line
         draw.text((forecast_width+20, y0-height*0.6), text=str(ranges[k][0]))
@@ -174,6 +184,7 @@ def main():
         if not line: continue
         if line == "terminate":
             break
+
         current_data, forecast_data = [], []
         try:
             data = json.loads(line)
@@ -186,22 +197,15 @@ def main():
             continue
 
         epd.init(epd.FULL_UPDATE)
-        #image = get_image({
-        #    "width": epd.width,
-        #    "height": epd.height,
-        #    "location": current_data[0]["location"],
-        #    "current": current,
-        #    "forecast": forecast
-        #})
+
         image = get_image(
             epd_width, epd_height,
             current_data[0]["location"], current_data[0], forecast_data[0]["forecast"]
         )
-        #).rotate(-90, expand=True)
         epd.display(epd.getbuffer(image))
-        image.save("graphicalForecast.png", "PNG")
-        epd.sleep() #set epaper display to sleep mode
+        #image.save("graphicalForecast.png", "PNG")
 
+        epd.sleep() #set epaper display to sleep mode
         print(f"SUCCESS", flush=True)
 
     epd2in13_V2.epdconfig.module_exit()
