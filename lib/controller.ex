@@ -12,7 +12,7 @@ defmodule EXW.Controller do
 
   @impl true
   def init(_init_state) do
-  	Logger.configure(level: :info)
+    Logger.configure(level: :info)
 
     log(:debug, "starting")
 

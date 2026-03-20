@@ -8,9 +8,9 @@ import epd2in13_V2
 epd_width, epd_height, = 250, 122
 
 fontdir = os.getcwd()+"/lib"
-small_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),9)
-text_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),20)
-large_font = ImageFont.truetype(os.path.join(fontdir,'Font.ttc'),42)
+small_font = ImageFont.truetype(os.path.join(fontdir, 'Font.ttc'), 9)
+text_font = ImageFont.truetype(os.path.join(fontdir, 'Font.ttc'), 20)
+large_font = ImageFont.truetype(os.path.join(fontdir, 'Font.ttc'), 42)
 
 
 #def get_image(data):
@@ -68,7 +68,6 @@ def get_image(epd_width, epd_height, location, current, forecast):
 
 def draw_windgauge(draw, center, radius, wind_spd, angle):
     wind_spd_str = str(wind_spd)
-    #w, h = draw.textsize(wind_speed,font=text_font)
     (left, top, right, bottom) = draw.textbbox((0,0), wind_spd_str, font=text_font)
     w, h = right - left, top - bottom
     draw.ellipse((center[0]-radius, center[1]-radius, center[0]+radius, center[1]+radius), width=2)
@@ -76,12 +75,10 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
     draw.line([center, (center[0]+radius*math.cos(angle-0.8*math.pi), center[1]-radius*math.sin(angle-0.8*math.pi))],  width=3)
     draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
     draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
-    #draw.text((center[0]-w/2+1,center[1]-h*0.6), text=wind_spd_str, font=text_font, fill=1, align='center')
     draw.text((center[0]-w/2+0, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
-    #start_label, end_label = forecast[0][0][:10], forecast[len(forecast)-1][0][:10] # time label
     forecast_x0 = 17
     forecast_width = 153 #[px]
 
@@ -105,10 +102,8 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     prev_hour = 0
     for i,p in enumerate(forecast):
         # draw vertical day separator lines
-        print(f"timestamp hour: {datetime.datetime.fromtimestamp(p["timestamp"]).hour}", flush=True)#debug
         curr_hour = datetime.datetime.fromtimestamp(p["timestamp"]).hour
         if curr_hour - prev_hour < 0: # mark beginning of new day
-            print(f"midnight at point {p}", flush=True)#debug
             draw.line([(forecast_x0+i*width, epd_height), (forecast_x0+i*width, epd_height-height*data_lines_count)], width=1)
         prev_hour = curr_hour
         # get min/max values
@@ -125,19 +120,9 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
     ranges["rain_prob"][0], ranges["rain_prob"][1] = 0, 100
     ranges["humidity"][0], ranges["humidity"][1] = 0, 100
 
-    ## draw vertical separators of the days
-    #for j in range(0, len(forecast)):
-    #    if forecast[j][0][11:13] == "00":
-    #        draw.line([(j*width, epd_height), (j*width, epd_height-height*data_lines_count)], width=1)
-
     # draw data lines
     curr_line = 0
     for k in ranges.keys():
-
-        ## horizontal line separating entries
-        #if curr_line != 0:
-        #    draw.line([(0, epd_height-height*curr_line-1), (22, epd_height-height*curr_line-1)])
-        #    draw.line([(forecast_width-37, epd_height-height*curr_line-1), (forecast_width, epd_height-height*curr_line-1)])
 
         # draw entries
         y0 = epd_height + (curr_line + 1 - data_lines_count) * height
@@ -152,9 +137,6 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         draw.polygon(polygon_points, fill=0)
 
         # draw label for what data is displayed in each line
-        #draw.text((0, y0-22), text=k[0].upper(), font=text_font)
-        #draw.text((forecast_x0-1, y0-16), text=k[0].upper(), font=text_font, anchor="rt")
-        #draw.text((1, y0-16), text=k[0].upper(), font=text_font, anchor="lt")
         draw.text((9, y0-16), text=k[0].upper(), font=text_font, anchor="mt")
 
         # draw lables for min and max values of each line
@@ -164,11 +146,12 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
         curr_line += 1
 
     # time labels
-    ##w,h = draw.textsize(end_label)
-    #(left, top, right, bottom) = draw.textbbox((0,0), end_label)
-    #w, h = right - left, top - bottom
-    #draw.text((0, epd_height-height*data_lines_count-h), text=start_label)
-    #draw.text((forecast_width-w, epd_height-height*data_lines_count-h), text=end_label)
+    start_label = str(datetime.datetime.fromtimestamp(forecast[0]['timestamp']).date())
+    end_label = str(datetime.datetime.fromtimestamp(forecast[-1]['timestamp']).date())
+    (left, top, right, bottom) = draw.textbbox((0,0), end_label)
+    w, h = right - left, top - bottom
+    draw.text((forecast_x0, 0), text=start_label, anchor='lt')
+    draw.text((forecast_x0+forecast_width, 0), text=end_label, anchor='rt')
 
 
 def main():
