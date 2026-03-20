@@ -19,21 +19,16 @@ def get_image(epd_width, epd_height, location, current, forecast):
     draw = ImageDraw.Draw(image)
 
     # add town and time info 
-    #time_str = time.strftime('%H:%M:%S')
     time_str = time.strftime('%H:%M')
-    #w,h = draw.textsize(time_str, font=text_font)
     (left, top, right, bottom) = draw.textbbox((0,0), time_str, font=text_font)
     w, h = right - left, top - bottom
     draw.text((epd_width-w, epd_height-30), text=time_str, font=text_font)
-    #w,h = draw.textsize(location)
     (left, top, right, bottom) = draw.textbbox((0,0), location)
     w, h = right - left, top - bottom
     draw.text((epd_width-w, epd_height-37), text=location)
 
     # add connection info
     try:
-        #ip = subprocess.check_output("hostname -I", shell=True, text=True)
-        #ip = ip.split(" ")[0]
         ip = subprocess.check_output(
             "ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d'/' -f1",
             shell=True, text=True
@@ -46,12 +41,10 @@ def get_image(epd_width, epd_height, location, current, forecast):
     # big condition info
     temp = round(current["temp"] - 273.15) #[°C]
     temp_str = str(temp)
-    #w,h = draw.textsize(temp,font=large_font)
     (left, top, right, bottom) = draw.textbbox((0,0), temp_str, font=large_font)
     w, h = right - left, top - bottom
     draw.text((237-w,2), text=temp_str, font=large_font, outline=0)
     draw.text((236,9), text='*C')
-    #draw.text((183,0), text=current["cond"], font=small_font) #condition
     draw.text((epd_width,0), text=current["cond"], font=small_font, anchor='rt')
 
     # wind gauge
@@ -114,7 +107,6 @@ def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
                 ranges[k][1] = p[k]
 
     # always show certain values in range from 0-100; windspeed, clouds, rain, humidity
-    #min_max[1],min_max[2],min_max[3],min_max[5] = [0,min_max[1][1]],[0,100],[0,100],[0,100]
     ranges["wind_spd"][0] = 0
     ranges["cloud_cov"][0], ranges["cloud_cov"][1] = 0, 100
     ranges["rain_prob"][0], ranges["rain_prob"][1] = 0, 100
