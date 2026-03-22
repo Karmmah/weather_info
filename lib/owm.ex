@@ -97,7 +97,7 @@ defmodule EXW.OWM do
                 temp: Float.round(dp["main"]["temp"] - 273.15, 1),
                 humidity: dp["main"]["humidity"],
                 cloud_cov: dp["clouds"]["all"],
-                rain_prob: dp["pop"],
+                rain_prob: dp["pop"]*100,
                 pressure: dp["main"]["pressure"],
                 wind_dir: dp["wind"]["deg"],
                 wind_spd: dp["wind"]["speed"],
