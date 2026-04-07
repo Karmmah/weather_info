@@ -10,7 +10,8 @@ defmodule EXW do
   # impl: this function is a callback
   @impl true
   def start(_type, _args) do
-    log(:info, "STARTED")
+    log(:info, "STARTING")
+    Logger.configure(level: :info)
     log(:debug, "Mix env: #{Mix.env()}")
 
     children = [

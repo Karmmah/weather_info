@@ -27,8 +27,6 @@ defmodule EXW.Storage do
   def handle_info({:update_current, new_current_data}, state) do
     log(:info, "updating current data with #{inspect(new_current_data)}")
 
-    log(:debug, "current data: #{inspect(state.current_data)}")
-
     if state.current_data != [] do
       content =
         state.current_data
@@ -48,17 +46,16 @@ defmodule EXW.Storage do
 
   def handle_info({:update_forecast, new_forecast_data}, state) do
     log(:info, "updating forecast data with #{inspect(new_forecast_data)}")
+    # log(:info, "updating forecast data #{inspect(new_forecast_data)}")
 
-    if state.forecast_data != [] do
+    # save the forecast to disk once per day
+    if state.forecast_data != [] and DateTime.utc_now().hour == 0 do
       content =
         state.forecast_data
-        # |> Jason.encode_to_iodata!()
         |> Jason.encode!()
 
       log(:debug, "saving forecast content #{inspect(content)}")
       File.write!("exw_log.jsonl", content <> "\n", [:append])
-      # File.write!("exw_log.jsonl", "\n", [:append])
-      # File.write!("exw_log.jsonl", content, [:append])
     end
 
     state = Map.put(state, :forecast_data, new_forecast_data)

@@ -1,6 +1,10 @@
 defmodule EXW.Display do
   use GenServer
 
+  # TODO:
+  # - create function for restarting the link to epd.py (e.g. for when epd.py was updated)
+  # - create system to display error messages for anything that goes wrong
+
   defp log(level, msg) do
     EXW.log_msg(level, "[#{__MODULE__}] " <> msg)
   end
@@ -27,9 +31,24 @@ defmodule EXW.Display do
   @impl true
   def terminate(_reason, port) do
     log(:info, "terminating epd.py")
-    # send(port, {:command, "terminate\n"})
     Port.command(port, "terminate\n")
     Port.close(port)
+  end
+
+  def handle_info(:restart, port) do
+    Port.command(port, "terminate\n")
+	receive do
+		{_from_port, {:data, data}} -> log(:info, "epd.py: #{String.trim(data)}")
+	end
+  	Port.close(port)
+    port =
+      Port.open({:spawn, "python3 lib/epd.py"}, [
+        :binary,
+        :exit_status,
+        :use_stdio,
+        :stderr_to_stdout
+      ])
+    {:noreply, port}
   end
 
   def handle_info({_port, {:exit_status, status}}, port) do
@@ -37,23 +56,23 @@ defmodule EXW.Display do
     {:stop, :port_terminated, port}
   end
 
-  @impl true
-  def handle_info({_from_port, {:data, data}}, port) do
-    log(:info, "received data from epd.py #{inspect(data)}")
-    {:noreply, port}
-  end
-
   def handle_info({:display, current_data, forecast_data}, port) do
-    log(:debug, "sending weather data to epd.py")
+    log(:info, "sending weather data to epd.py")
 
     data =
       Jason.encode!(%{
         command: :display,
         current: current_data,
         forecast: forecast_data
-      })
+      }) <> "\n"
 
-    Port.command(port, data <> "\n")
+    Port.command(port, data)
+    {:noreply, port}
+  end
+
+  @impl true
+  def handle_info({_from_port, {:data, data}}, port) do
+    log(:info, "epd.py: #{inspect(data)}")
     {:noreply, port}
   end
 end
