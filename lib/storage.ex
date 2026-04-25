@@ -63,12 +63,94 @@ defmodule EXW.Storage do
     {:noreply, state}
   end
 
+  def handle_info({:fetch_data, locations, api_key}, state) do
+	log(:info, "fetching weather data for all locations")
+    {current_data, forecast_data} = get_weather_data(locations, api_key)
+
+    state =
+      state
+      |> Map.put(:current_data, current_data)
+      |> Map.put(:forecast_data, forecast_data)
+
+	{:noreply, state}
+  end
+
   def handle_info(other, state) do
     log(:error, "unknown command given: #{inspect(other)}")
     {:noreply, state}
   end
 
+  @impl true
+  # TODO remove this?
+  def handle_call(:get_data, _from, state) do
+  	{:reply, {state.current_data, state.forecast_data}, state}
+  end
+
+  @doc """
+    helper function: get current and forecast weather for all locations simultaneously
+  """
+  def get_weather_data(locations, api_key) do
+    current_task =
+      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+        EXW.Storage.get_current_weather_data(locations, api_key)
+      end)
+
+    forecast_task =
+      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+        EXW.Storage.get_forecast_weather_data(locations, api_key)
+      end)
+
+    {Task.await(current_task, 5000), Task.await(forecast_task, 5000)}
+  end
+
+  @doc """
+    helper function: get current weather data for all locations simultaneously
+  """
+  def get_current_weather_data(locations, api_key) do
+    tasks =
+      Enum.map(locations, fn loc ->
+        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+          EXW.OWM.fetch_current_weather_data(loc, api_key)
+        end)
+      end)
+
+    Enum.reduce(tasks, [], fn task, acc ->
+      case Task.await(task, 5000) do
+        {:ok, result} ->
+          [result | acc]
+
+        {:exit, reason} ->
+          log(:error, "Task failed #{inspect(reason)}")
+          acc
+      end
+    end)
+  end
+
+  @doc """
+    helper function: get forecast weather data for all locations simultaneously
+  """
+  def get_forecast_weather_data(locations, api_key) do
+    tasks =
+      Enum.map(locations, fn loc ->
+        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
+          EXW.OWM.fetch_forecast_weather_data(loc, api_key)
+        end)
+      end)
+
+    Enum.reduce(tasks, [], fn task, acc ->
+      case Task.await(task, 5000) do
+        {:ok, result} ->
+          [result | acc]
+
+        {:exit, reason} ->
+          log(:error, "Task failed #{inspect(reason)}")
+          acc
+      end
+    end)
+  end
+
   # terminate is called when the process is stopped externally
   # def terminate(_reason, state) do
   # end
+
 end

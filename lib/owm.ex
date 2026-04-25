@@ -65,6 +65,7 @@ defmodule EXW.OWM do
           pressure: data["main"]["pressure"],
           wind_dir: data["wind"]["deg"],
           wind_spd: data["wind"]["speed"],
+          # wind_spd: :math.pow(data["wind"]["speed"] / 0.836, 2 / 3),
           # wind_gust: data["wind"]["gust"],
           vis: data["visibility"]
         }
@@ -97,7 +98,7 @@ defmodule EXW.OWM do
                 temp: Float.round(dp["main"]["temp"] - 273.15, 1),
                 humidity: dp["main"]["humidity"],
                 cloud_cov: dp["clouds"]["all"],
-                rain_prob: dp["pop"]*100,
+                rain_prob: dp["pop"] * 100,
                 pressure: dp["main"]["pressure"],
                 wind_dir: dp["wind"]["deg"],
                 wind_spd: dp["wind"]["speed"],

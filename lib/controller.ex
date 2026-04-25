@@ -21,26 +21,14 @@ defmodule EXW.Controller do
     log(:info, "locations: #{inspect(locations)}")
 
     state = %{
-      key: api_key,
+      api_key: api_key,
       locations: locations,
       display_location: Enum.at(locations, 0),
       last_update: DateTime.utc_now()
-      # current_data: [],
-      # forecast_data: []
     }
 
-    {current_data, forecast_data} = get_weather_data(state)
-    log(:debug, "current data: #{inspect(current_data)}")
-    log(:debug, "forecast data: #{inspect(forecast_data)}")
-
-    state =
-      state
-      |> Map.put(:current_data, current_data)
-      |> Map.put(:forecast_data, forecast_data)
-
-    send(:storage, {:update_current, current_data})
-    send(:storage, {:update_forecast, forecast_data})
-    send(:display, {:display, current_data, forecast_data})
+    send(:storage, {:fetch_data, locations, api_key})
+    send(:display, :display)
 
     send(self(), :sleep)
 
@@ -52,17 +40,10 @@ defmodule EXW.Controller do
   def handle_info(:update, state) do
     log(:info, "UPDATE STARTED")
 
-    {current_data, forecast_data} = get_weather_data(state)
+    send(:storage, {:fetch_data, state.locations, state.api_key})
+    send(:display, :display)
 
-    send(:storage, {:update_current, current_data})
-    send(:storage, {:update_forecast, forecast_data})
-    send(:display, {:display, current_data, forecast_data})
-
-    state =
-      state
-      # |> Map.put(:current_data, current_data)
-      # |> Map.put(:forecast_data, forecast_data)
-      |> Map.put(:last_update, DateTime.utc_now())
+    state = Map.put(state, :last_update, DateTime.utc_now())
 
     send(self(), :sleep)
     log(:info, "UPDATE FINISHED")
@@ -100,66 +81,4 @@ defmodule EXW.Controller do
     {:noreply, state}
   end
 
-  @doc """
-    helper function: get current and forecast weather for all locations simultaneously
-  """
-  def get_weather_data(state) do
-    current_task =
-      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
-        EXW.Controller.get_current_weather_data(state)
-      end)
-
-    forecast_task =
-      Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
-        EXW.Controller.get_forecast_weather_data(state)
-      end)
-
-    {Task.await(current_task, 5000), Task.await(forecast_task, 5000)}
-  end
-
-  @doc """
-    helper function: get current weather data for all locations simultaneously
-  """
-  def get_current_weather_data(state) do
-    tasks =
-      Enum.map(state.locations, fn loc ->
-        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
-          EXW.OWM.fetch_current_weather_data(loc, state.key)
-        end)
-      end)
-
-    Enum.reduce(tasks, [], fn task, acc ->
-      case Task.await(task, 5000) do
-        {:ok, result} ->
-          [result | acc]
-
-        {:exit, reason} ->
-          log(:error, "Task failed #{inspect(reason)}")
-          acc
-      end
-    end)
-  end
-
-  @doc """
-    helper function: get forecast weather data for all locations simultaneously
-  """
-  def get_forecast_weather_data(state) do
-    tasks =
-      Enum.map(state.locations, fn loc ->
-        Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
-          EXW.OWM.fetch_forecast_weather_data(loc, state.key)
-        end)
-      end)
-
-    Enum.reduce(tasks, [], fn task, acc ->
-      case Task.await(task, 5000) do
-        {:ok, result} ->
-          [result | acc]
-
-        {:exit, reason} ->
-          log(:error, "Task failed #{inspect(reason)}")
-          acc
-      end
-    end)
-  end
 end

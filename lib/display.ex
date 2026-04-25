@@ -2,7 +2,6 @@ defmodule EXW.Display do
   use GenServer
 
   # TODO:
-  # - create function for restarting the link to epd.py (e.g. for when epd.py was updated)
   # - create system to display error messages for anything that goes wrong
 
   defp log(level, msg) do
@@ -36,11 +35,18 @@ defmodule EXW.Display do
   end
 
   def handle_info(:restart, port) do
-    Port.command(port, "terminate\n")
-	receive do
-		{_from_port, {:data, data}} -> log(:info, "epd.py: #{String.trim(data)}")
+    try do
+		Port.command(port, "terminate\n")
+
+		receive do
+		  {_from_port, {:data, data}} -> log(:info, "epd.py: #{String.trim(data)}")
+		end
+
+		Port.close(port)
+	rescue
+		err -> log(:warning, "port error: #{inspect(err)}")
 	end
-  	Port.close(port)
+
     port =
       Port.open({:spawn, "python3 lib/epd.py"}, [
         :binary,
@@ -48,6 +54,9 @@ defmodule EXW.Display do
         :use_stdio,
         :stderr_to_stdout
       ])
+
+	send(self(), :display)
+
     {:noreply, port}
   end
 
@@ -56,9 +65,10 @@ defmodule EXW.Display do
     {:stop, :port_terminated, port}
   end
 
-  def handle_info({:display, current_data, forecast_data}, port) do
-    log(:info, "sending weather data to epd.py")
+  def handle_info(:display, port) do
+	{current_data, forecast_data} = GenServer.call(:storage, :get_data)
 
+    log(:info, "sending weather data to epd.py")
     data =
       Jason.encode!(%{
         command: :display,

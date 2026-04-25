@@ -60,7 +60,8 @@ def get_image(epd_width, epd_height, location, current, forecast):
 
 
 def draw_windgauge(draw, center, radius, wind_spd, angle):
-    wind_spd_str = str(wind_spd)
+    #wind_spd_str = str(wind_spd)
+    wind_spd_str = str(round((wind_spd/0.836)**(2/3))) # beaufort scale
     (left, top, right, bottom) = draw.textbbox((0,0), wind_spd_str, font=text_font)
     w, h = right - left, top - bottom
     draw.ellipse((center[0]-radius, center[1]-radius, center[0]+radius, center[1]+radius), width=2)
