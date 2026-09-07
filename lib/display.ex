@@ -2,7 +2,7 @@ defmodule EXW.Display do
   use GenServer
 
   # TODO:
-  # - create system to display error messages for anything that goes wrong
+  # - create system to display error messages on the display
 
   defp log(level, msg) do
     EXW.log_msg(level, "[#{__MODULE__}] " <> msg)
@@ -34,6 +34,7 @@ defmodule EXW.Display do
     Port.close(port)
   end
 
+  @impl true
   def handle_info(:restart, port) do
     try do
 		Port.command(port, "terminate\n")
@@ -80,7 +81,6 @@ defmodule EXW.Display do
     {:noreply, port}
   end
 
-  @impl true
   def handle_info({_from_port, {:data, data}}, port) do
     log(:info, "epd.py: #{inspect(data)}")
     {:noreply, port}

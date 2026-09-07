@@ -86,10 +86,8 @@ defmodule EXW.Storage do
   	{:reply, {state.current_data, state.forecast_data}, state}
   end
 
-  @doc """
-    helper function: get current and forecast weather for all locations simultaneously
-  """
   def get_weather_data(locations, api_key) do
+  	# async so current and forecast data can be fetched simultaneously
     current_task =
       Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
         EXW.Storage.get_current_weather_data(locations, api_key)
@@ -103,10 +101,8 @@ defmodule EXW.Storage do
     {Task.await(current_task, 5000), Task.await(forecast_task, 5000)}
   end
 
-  @doc """
-    helper function: get current weather data for all locations simultaneously
-  """
   def get_current_weather_data(locations, api_key) do
+  	# async so data can be fetched for all locations simultaneously
     tasks =
       Enum.map(locations, fn loc ->
         Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->

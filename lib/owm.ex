@@ -14,8 +14,9 @@ defmodule EXW.OWM do
     # TODO:
     # - store fetched coordinates (in config?)
     # - fetch only if coordinates are not already stored
+
     data = YamlElixir.read_from_file!("config.yaml")
-    # log(:debug, "read data: #{inspect(data)}")
+    log(:debug, "read data: #{inspect(data)}")
 
     data["locations"]
     |> Enum.reduce(
@@ -33,7 +34,7 @@ defmodule EXW.OWM do
     # TODO:
     # - what happens when city is not found?
     # OWM geocoding api call: http://api.openweathermap.org/geo/1.0/direct?q={city name},{state code},{country code}&limit={limit}&appid={API key}
-    # limit: how many results for the given city name should be shown, if there are multiple available
+    # limit: how many results for the given city name should be shown, if there are multiple with same name available
     log(:info, "calling OWM API to get coordinates for #{city_name}")
     url = "http://api.openweathermap.org/geo/1.0/direct?q=#{city_name}&limit=1&appid=#{api_key}"
     data = Req.get!(url)

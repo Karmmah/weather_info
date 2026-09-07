@@ -36,7 +36,6 @@ def get_image(epd_width, epd_height, location, current, forecast):
     except:
         ip = "No connection"
     draw.text((epd_width, epd_height-9), text=ip, anchor="rt")
-    print(f"connection info: {ip}", flush=True) #debug
 
     # big condition info
     temp = round(current["temp"] - 273.15) #[°C]
@@ -179,10 +178,10 @@ def main():
             current_data[0]["location"], current_data[0], forecast_data[0]["forecast"]
         )
         epd.display(epd.getbuffer(image))
-        #image.save("graphicalForecast.png", "PNG")
+        image.save("graphicalForecast.png", "PNG")
 
         epd.sleep() #set epaper display to sleep mode
-        print(f"SUCCESS", flush=True)
+        print("SUCCESS", flush=True)
 
     epd2in13_V2.epdconfig.module_exit()
     print("TERMINATED", flush=True)

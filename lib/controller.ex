@@ -1,6 +1,5 @@
 defmodule EXW.Controller do
   use GenServer
-  require Logger
 
   defp log(level, msg) do
     EXW.log_msg(level, "[#{__MODULE__}] " <> msg)
@@ -29,6 +28,7 @@ defmodule EXW.Controller do
 
     send(:storage, {:fetch_data, locations, api_key})
     send(:display, :display)
+	send(:http_server, :update)
 
     send(self(), :sleep)
 
@@ -42,6 +42,7 @@ defmodule EXW.Controller do
 
     send(:storage, {:fetch_data, state.locations, state.api_key})
     send(:display, :display)
+	send(:http_server, :update)
 
     state = Map.put(state, :last_update, DateTime.utc_now())
 
@@ -53,8 +54,9 @@ defmodule EXW.Controller do
   def handle_info(:sleep, state) do
     # Sleep until next full hour since last update time
     # TODO: think about how this deals with summer/winter time so missing or doubled data might exist
+
+    # calculate remaining time until next hour in seconds
     now = DateTime.utc_now()
-    # remaining time until next hour in seconds
     rem_time = (60 - now.minute - 1) * 60 + (60 - now.second)
 
     log(:debug, "remaining seconds until next hour: #{rem_time}")
