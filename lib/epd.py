@@ -42,13 +42,13 @@ def get_image(epd_width, epd_height, location, current, forecast):
     temp_str = str(temp)
     (left, top, right, bottom) = draw.textbbox((0,0), temp_str, font=large_font)
     w, h = right - left, top - bottom
-    draw.text((237-w,2), text=temp_str, font=large_font, outline=0)
-    draw.text((236,9), text='*C')
-    draw.text((epd_width,0), text=current["cond"], font=small_font, anchor='rt')
+    draw.text((239-w,1), text=temp_str, font=large_font, outline=0)
+    draw.text((235,8), text='*C')
+    draw.text((epd_width,1), text=current["cond"], font=small_font, anchor='rt')
 
     # wind gauge
     radius = 20 #pixels
-    center = (epd_width-radius-1, 65)
+    center = (epd_width-radius-6, 65)
     angle, wind_speed = current["wind_dir"], round(current["wind_spd"])
     draw_windgauge(draw, center, radius, wind_speed, angle)
 
@@ -72,8 +72,8 @@ def draw_windgauge(draw, center, radius, wind_spd, angle):
 
 
 def draw_graphical_forecast(epd_width, epd_height, draw, forecast):
-    forecast_x0 = 17
-    forecast_width = 153 #[px]
+    forecast_x0 = 16
+    forecast_width = 145 #[px]
 
     # unreasonable default values that get overwritten
     ranges = {

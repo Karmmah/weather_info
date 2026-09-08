@@ -26,13 +26,12 @@ def run():
     s.close()
 
     print(f"[ INFO ] Server running at {ipaddr}:{port}", flush=True)
-    #httpd.serve_forever()
-    httpd.handle_request()
-    for line in sys.stdin:
-        print(f"line:{line}", flush=True) #debug
-        if line == "terminate\n":
-            break
-        httpd.handle_request()
+    httpd.serve_forever()
+    #for line in sys.stdin:
+    #    print(f"line:{line}", flush=True) #debug
+    #    if line == "terminate\n":
+    #        break
+    #    httpd.handle_request()
     print("[ INFO ] stopped", flush=True)
 
 

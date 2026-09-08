@@ -26,8 +26,7 @@ weather_info-*.tar
 owm_token.txt
 my_config.yaml
 
-# -----------------------------
-# old python stuff
+# config, logging, other
 openweathermap_token.txt
 #weather_log.txt
 weather_log*
@@ -37,7 +36,10 @@ error.txt
 town.txt
 towns.txt
 index.html
+activate*
 
+# -----------------------------
+# old python stuff
 *.pyc
 *.py.save
 *.swp

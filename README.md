@@ -39,3 +39,9 @@ be found at <https://hexdocs.pm/weather_info>.
 - set up venv (python3 -m venv venv; . venv/bin/activate)
 - install python modules (pip install: spidev, pillow, gpiod, RPi.GPIO, numpy)
 - run iex -S mix as root (enter su, needed to be able to acces gpio pins; apparently not needed only on raspberry os)
+
+
+## Operation
+
+- start app in su mode with iex -S mix
+- stop it from iex with :init.stop

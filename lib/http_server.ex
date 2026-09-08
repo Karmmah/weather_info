@@ -14,7 +14,6 @@ defmodule EXW.HTTPServer do
 		log(:debug, "starting")
 		port =
 			Port.open(
-				#{:spawn, "python3 lib/info_server.py"},
 				{:spawn, "python3 info_server.py"},
 				#{:spawn, "python3 -m http.server 80"},
 				[
@@ -29,7 +28,7 @@ defmodule EXW.HTTPServer do
 
   @impl true
   def terminate(_reason, port) do
-    #log(:info, "terminating info_server.py")
+    log(:info, "terminating info_server.py")
     #Port.command(port, "terminate\n")
     Port.close(port)
   end
@@ -48,7 +47,7 @@ defmodule EXW.HTTPServer do
 			<center>
 			<h1>Weather Info Status</h1>
 			<div style="background:#abcdef">
-				<p><span id="updateTime">the time is now</span>
+				<p><span id="updateTime">#{Calendar.strftime(DateTime.utc_now(), "%d.%m.%y - %H:%M:%S")} (UTC)</span>
 			</div>
 			<div style="background:#ffcdef">
 				<img src="graphicalForecast.png" alt="graphical forecast" style="width:500px">
@@ -57,6 +56,7 @@ defmodule EXW.HTTPServer do
 		</html>
 		"""
 	)
+  	log(:info, "finished")
   	{:noreply, port}
   end
 
