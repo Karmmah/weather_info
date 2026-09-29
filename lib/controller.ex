@@ -28,7 +28,7 @@ defmodule EXW.Controller do
 
     send(:storage, {:fetch_data, locations, api_key})
     send(:display, :display)
-	send(:http_server, :update)
+    send(:http_server, :update)
 
     send(self(), :sleep)
 
@@ -42,7 +42,7 @@ defmodule EXW.Controller do
 
     send(:storage, {:fetch_data, state.locations, state.api_key})
     send(:display, :display)
-	send(:http_server, :update)
+    send(:http_server, :update)
 
     state = Map.put(state, :last_update, DateTime.utc_now())
 
@@ -82,5 +82,4 @@ defmodule EXW.Controller do
     log(:error, "unknown message #{msg}")
     {:noreply, state}
   end
-
 end

@@ -58,7 +58,6 @@ defmodule EXW.OWM do
           timestamp: data["dt"],
           cond: Enum.at(data["weather"], 0)["main"],
           cond_descr: Enum.at(data["weather"], 0)["description"],
-          # temp: Float.round(data["main"]["temp"] - 273.15, 1),
           temp: data["main"]["temp"],
           hum: data["main"]["humidity"],
           cloud_cov: data["clouds"]["all"],
@@ -66,10 +65,13 @@ defmodule EXW.OWM do
           pressure: data["main"]["pressure"],
           wind_dir: data["wind"]["deg"],
           wind_spd: data["wind"]["speed"],
-          # wind_spd: :math.pow(data["wind"]["speed"] / 0.836, 2 / 3),
           # wind_gust: data["wind"]["gust"],
           vis: data["visibility"]
         }
+
+        log(:debug, """
+        wind: spd: #{res.wind_spd} m/s, dir: #{res.wind_dir} deg
+        """)
 
         {:ok, res}
 

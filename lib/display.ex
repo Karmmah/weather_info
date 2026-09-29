@@ -37,16 +37,16 @@ defmodule EXW.Display do
   @impl true
   def handle_info(:restart, port) do
     try do
-		Port.command(port, "terminate\n")
+      Port.command(port, "terminate\n")
 
-		receive do
-		  {_from_port, {:data, data}} -> log(:info, "epd.py: #{String.trim(data)}")
-		end
+      receive do
+        {_from_port, {:data, data}} -> log(:info, "epd.py: #{String.trim(data)}")
+      end
 
-		Port.close(port)
-	rescue
-		err -> log(:warning, "port error: #{inspect(err)}")
-	end
+      Port.close(port)
+    rescue
+      err -> log(:warning, "port error: #{inspect(err)}")
+    end
 
     port =
       Port.open({:spawn, "python3 lib/epd.py"}, [
@@ -56,7 +56,7 @@ defmodule EXW.Display do
         :stderr_to_stdout
       ])
 
-	send(self(), :display)
+    send(self(), :display)
 
     {:noreply, port}
   end
@@ -67,9 +67,10 @@ defmodule EXW.Display do
   end
 
   def handle_info(:display, port) do
-	{current_data, forecast_data} = GenServer.call(:storage, :get_data)
+    {current_data, forecast_data} = GenServer.call(:storage, :get_data)
 
     log(:info, "sending weather data to epd.py")
+
     data =
       Jason.encode!(%{
         command: :display,

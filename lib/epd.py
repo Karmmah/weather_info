@@ -22,10 +22,10 @@ def get_image(epd_width, epd_height, location, current, forecast):
     time_str = time.strftime('%H:%M')
     (left, top, right, bottom) = draw.textbbox((0,0), time_str, font=text_font)
     w, h = right - left, top - bottom
-    draw.text((epd_width-w, epd_height-30), text=time_str, font=text_font)
+    draw.text((epd_width-w, epd_height-20), text=time_str, font=text_font)
     (left, top, right, bottom) = draw.textbbox((0,0), location)
     w, h = right - left, top - bottom
-    draw.text((epd_width-w, epd_height-37), text=location)
+    draw.text((epd_width-w, epd_height-27), text=location)
 
     # add connection info
     try:
@@ -35,21 +35,22 @@ def get_image(epd_width, epd_height, location, current, forecast):
         ).strip()
     except:
         ip = "No connection"
-    draw.text((epd_width, epd_height-9), text=ip, anchor="rt")
+    draw.text((epd_width, 0), text=ip, anchor="rt")
 
     # big condition info
     temp = round(current["temp"] - 273.15) #[°C]
     temp_str = str(temp)
     (left, top, right, bottom) = draw.textbbox((0,0), temp_str, font=large_font)
     w, h = right - left, top - bottom
-    draw.text((239-w,1), text=temp_str, font=large_font, outline=0)
-    draw.text((235,8), text='*C')
-    draw.text((epd_width,1), text=current["cond"], font=small_font, anchor='rt')
+    draw.text((239-w,2), text=temp_str, font=large_font, outline=0)
+    draw.text((235,9), text='*C')
+    draw.text((epd_width,46), text=current["cond"], font=small_font, anchor='rt')
 
     # wind gauge
     radius = 20 #pixels
-    center = (epd_width-radius-6, 65)
-    angle, wind_speed = current["wind_dir"], round(current["wind_spd"])
+    center = (epd_width-radius-6, 75)
+    angle = current["wind_dir"] # [deg]
+    wind_speed = round(current["wind_spd"]) # [m/s]
     draw_windgauge(draw, center, radius, wind_speed, angle)
 
     # graphical forecast
@@ -59,15 +60,36 @@ def get_image(epd_width, epd_height, location, current, forecast):
 
 
 def draw_windgauge(draw, center, radius, wind_spd, angle):
+    print(f"wind angle deg: {angle}", flush=True) #debug
+    line_thickness = 16
+    radius = radius-line_thickness/2
+    angle = angle/180*math.pi # sin and cos need radian
+    print(f"wind angle rad: {angle}", flush=True) #debug
     #wind_spd_str = str(wind_spd)
-    wind_spd_str = str(round((wind_spd/0.836)**(2/3))) # beaufort scale
+    wind_spd_str = str(round((wind_spd/0.836)**(2/3))) # m/s > beaufort scale conversion
     (left, top, right, bottom) = draw.textbbox((0,0), wind_spd_str, font=text_font)
-    w, h = right - left, top - bottom
-    draw.ellipse((center[0]-radius, center[1]-radius, center[0]+radius, center[1]+radius), width=2)
-    draw.line([center, (center[0]+radius*math.cos(angle), center[1]-radius*math.sin(angle))],  width=3)
-    draw.line([center, (center[0]+radius*math.cos(angle-0.8*math.pi), center[1]-radius*math.sin(angle-0.8*math.pi))],  width=3)
-    draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
-    draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
+    w, h = right - left, top - bottom # label text width and height
+    # make icon point into meteorlogical wind direction
+    # https://en.wikipedia.org/wiki/Wind_direction
+    # 0 when wind blows from north, 90 when from east
+    angle = angle + math.pi
+    ## round version with lines
+    #draw.ellipse((center[0]-radius, center[1]-radius, center[0]+radius, center[1]+radius), width=2)
+    #draw.line([center, (center[0]+radius*math.cos(angle), center[1]-radius*math.sin(angle))],  width=3)
+    #draw.line([center, (center[0]+radius*math.cos(angle-0.8*math.pi), center[1]-radius*math.sin(angle-0.8*math.pi))],  width=3)
+    #draw.line([center, (center[0]+radius*math.cos(angle+0.8*math.pi), center[1]-radius*math.sin(angle+0.8*math.pi))],  width=3)
+    #draw.ellipse((center[0]-radius/2, center[1]-radius/2, center[0]+radius/2, center[1]+radius/2), fill=0)
+    #draw.text((center[0]-w/2+0, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
+    # arrow version
+    points = [
+        (center[0]+radius*1.1*math.sin(angle), center[1]-radius*1.1*math.cos(angle)),
+        (center[0]+radius*0.8*math.sin(angle-0.8*math.pi), center[1]-radius*0.8*math.cos(angle-0.8*math.pi)),
+        (center[0]+radius*0.8*math.sin(angle+0.8*math.pi), center[1]-radius*0.8*math.cos(angle+0.8*math.pi)),
+        (center[0]+radius*1.1*math.sin(angle), center[1]-radius*1.1*math.cos(angle)), # close the triangle
+        (center[0]+radius*0.8*math.sin(angle-0.8*math.pi), center[1]-radius*0.8*math.cos(angle-0.8*math.pi)), # another point to get rounded corner on every corner
+    ]
+    draw.polygon(points, fill="black")
+    draw.line(points, fill = "black", width = line_thickness, joint = "curve")
     draw.text((center[0]-w/2+0, center[1]+h*0.83), text=wind_spd_str, font=text_font, fill=1, align='center')
 
 

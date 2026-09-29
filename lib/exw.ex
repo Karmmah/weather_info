@@ -7,11 +7,21 @@ defmodule EXW do
   use Application
   require Logger
 
+  def help() do
+    IO.puts("""
+    #### Elixir Weather Info Service Help ####
+      Actions available inside iex:
+      > restart e-paper display  -> send(:display, :restart)
+      > update site html         -> send(:http_server, :update)
+    """)
+  end
+
   # impl: this function is a callback
   @impl true
   def start(_type, _args) do
     log(:info, "STARTING")
-    Logger.configure(level: :info)
+    # Logger.configure(level: :info)
+    Logger.configure(level: :debug)
     log(:debug, "Mix env: #{Mix.env()}")
 
     children = [
@@ -19,7 +29,7 @@ defmodule EXW do
       {Registry, name: EXW, keys: :unique},
       %{id: :storage, start: {EXW.Storage, :start_link, [[name: :storage]]}},
       %{id: :display, start: {EXW.Display, :start_link, [[name: :display]]}},
-	  %{id: :http_server, start: {EXW.HTTPServer, :start_link, [[name: :http_server]]}},
+      %{id: :http_server, start: {EXW.HTTPServer, :start_link, [[name: :http_server]]}},
       {Task.Supervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
       %{id: :controller, start: {EXW.Controller, :start_link, [[name: :controller]]}}
       # {DynamicSupervisor, name: EXW.OWM_Supervisor, strategy: :one_for_one},
@@ -34,11 +44,11 @@ defmodule EXW do
 
   def log_msg(level, msg) do
     case level do
-      :info		-> Logger.info(msg)
-      :debug	-> Logger.debug(msg)
-      :warning	-> Logger.warning(msg)
-      :error	-> Logger.error(msg)
-      _			-> :ok
+      :info -> Logger.info(msg)
+      :debug -> Logger.debug(msg)
+      :warning -> Logger.warning(msg)
+      :error -> Logger.error(msg)
+      _ -> :ok
     end
   end
 
@@ -49,7 +59,9 @@ defmodule EXW do
   def read_api_key() do
     # TODO:
     # - check if file is available and throw error if not
-    {:ok, key} = File.read("owm_token.txt")
-    String.trim(key)
+    # {:ok, key} = File.read("owm_token.txt")
+    # String.trim(key)
+    File.read!("owm_token.txt")
+    |> String.trim()
   end
 end

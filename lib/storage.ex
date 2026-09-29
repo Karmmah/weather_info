@@ -64,7 +64,7 @@ defmodule EXW.Storage do
   end
 
   def handle_info({:fetch_data, locations, api_key}, state) do
-	log(:info, "fetching weather data for all locations")
+    log(:info, "fetching weather data for all locations")
     {current_data, forecast_data} = get_weather_data(locations, api_key)
 
     state =
@@ -72,7 +72,7 @@ defmodule EXW.Storage do
       |> Map.put(:current_data, current_data)
       |> Map.put(:forecast_data, forecast_data)
 
-	{:noreply, state}
+    {:noreply, state}
   end
 
   def handle_info(other, state) do
@@ -83,11 +83,11 @@ defmodule EXW.Storage do
   @impl true
   # TODO remove this?
   def handle_call(:get_data, _from, state) do
-  	{:reply, {state.current_data, state.forecast_data}, state}
+    {:reply, {state.current_data, state.forecast_data}, state}
   end
 
   def get_weather_data(locations, api_key) do
-  	# async so current and forecast data can be fetched simultaneously
+    # async so current and forecast data can be fetched simultaneously
     current_task =
       Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
         EXW.Storage.get_current_weather_data(locations, api_key)
@@ -102,7 +102,7 @@ defmodule EXW.Storage do
   end
 
   def get_current_weather_data(locations, api_key) do
-  	# async so data can be fetched for all locations simultaneously
+    # async so data can be fetched for all locations simultaneously
     tasks =
       Enum.map(locations, fn loc ->
         Task.Supervisor.async_nolink(EXW.OWM_Supervisor, fn ->
@@ -148,5 +148,4 @@ defmodule EXW.Storage do
   # terminate is called when the process is stopped externally
   # def terminate(_reason, state) do
   # end
-
 end
